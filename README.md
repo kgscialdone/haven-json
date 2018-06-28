@@ -1,3 +1,7 @@
+[![Build Status](https://www.travis-ci.com/tripl3dogdare/haven-json.svg?branch=master)](https://www.travis-ci.com/tripl3dogdare/haven-json)
+[![Issue Count](https://img.shields.io/github/issues/tripl3dogdare/haven-json.svg)](https://github.com/tripl3dogdare/haven-json/issues)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
+
 # Haven
 Haven is a  simple JSON library written in pure Kotlin with no external dependencies.
 It was designed with simplicity of use in mind, with the goal of letting the user manipulate
