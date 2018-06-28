@@ -37,10 +37,10 @@ with your data, while still being type-safe (and without all the type-safety syn
 Haven may eventually support a data-binding style of JSON manipulation, but for now, it's at
 the bottom of the priority list. Haven's philosophy revolves around simplicity and flexibility,
 and data-binding is by necessity rather complex, verbose, and tedious - it has it's uses,
-certainly, but when it comes to this project I find it more important to focus on following
-making Haven as awesome as possible within it's existing philosophy. That said, if anyone
-would like to create data-binding capabilities for Haven as an addon library, feel free to
-let me know and I'll be sure to link you here.
+certainly, but when it comes to this project I find it more important to focus on making Haven 
+as awesome as possible within it's existing philosophy. That said, if anyone would like to create 
+data-binding capabilities for Haven as an addon library, feel free to let me know and I'll be 
+sure to link you here.
 
 ## Installation
 You can install Haven with [JitPack](https://jitpack.io/#tripl3dogdare/haven-json)
@@ -87,7 +87,8 @@ val jwick:Json = Json(
   "occupation" to "Hitman",
   "contacts" to listOf(
     mapOf("name" to "Ethan Hunt", "number" to "[REDACTED]"),
-    mapOf("name" to "Jason Bourne", "number" to "[REDACTED]")
+    mapOf("name" to "Jason Bourne", "number" to "[REDACTED]"),
+    mapOf("name" to "Bender", "number" to "2716057")
   )
 )
 ```
@@ -95,6 +96,7 @@ val jwick:Json = Json(
 **Accessing JSON via the DSL**
 ```kotlin
 // Untyped value access
+// Returns null if the value doesn't exist
 val jwickName:Any? = jwick["name"].value
 
 // Typed value access
@@ -113,7 +115,8 @@ val string = """
     "occupation": "Hitman",
     "contacts": [
       { "name": "Ethan Hunt", "number": "[REDACTED]" },
-      { "name": "Jason Bourne", "number": "[REDACTED]" } 
+      { "name": "Jason Bourne", "number": "[REDACTED]" },
+      { "name": "Bender", "number": "2716057" }
     ]
   }
 """
