@@ -1,0 +1,12 @@
+{
+  "int": 100,
+  "float": 100.0,
+  "string": "string \\\"with quotes\"",
+  "escapes": "\u2602\n\b\r\t\f\\\"",
+  "boolean": true,
+  "null": null,
+  "list": [100, 100.0, "string"],
+  "map": {"test1": 100, "test2": "string"},
+  "list2": [100, 100.0, "string"],
+  "map2": {"test1": 100, "test2": "string"}
+}
