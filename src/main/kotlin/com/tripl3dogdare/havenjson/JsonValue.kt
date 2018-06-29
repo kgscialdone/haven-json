@@ -32,7 +32,7 @@ abstract class JsonValue<T> {
       is Collection<*> -> JsonArray(v.map(::invoke))
       is Map<*,*> -> JsonObject(v.entries.associate { it.key.toString() to invoke(it.value) })
       null -> JsonNull
-      else -> throw IllegalArgumentException()
+      else -> JsonString(v.toString())
     }
 
     operator fun invoke(vararg vs:Pair<String, Any?>):Json = invoke(vs.toMap())
