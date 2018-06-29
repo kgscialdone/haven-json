@@ -29,7 +29,7 @@ abstract class JsonValue<T> {
       is Float -> JsonFloat(v)
       is String -> JsonString(v)
       is Boolean -> JsonBoolean(v)
-      is Collection<*> -> JsonArray(v.map(::invoke).toList())
+      is Collection<*> -> JsonArray(v.map(::invoke))
       is Map<*,*> -> JsonObject(v.entries.associate { it.key.toString() to invoke(it.value) })
       null -> JsonNull
       else -> throw IllegalArgumentException()
