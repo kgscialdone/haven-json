@@ -1,6 +1,6 @@
 package com.tripl3dogdare.havenjson
 
-tailrec fun String.jsonEscape(acc:String=""):String {
+internal tailrec fun String.jsonEscape(acc:String=""):String {
   if(this.isEmpty()) return acc
   return when(this[0]) {
     '\"' -> tail.jsonEscape("$acc\\\"")
@@ -14,7 +14,7 @@ tailrec fun String.jsonEscape(acc:String=""):String {
   }
 }
 
-tailrec fun String.jsonUnescape(acc:String=""):String {
+internal tailrec fun String.jsonUnescape(acc:String=""):String {
   if(this.isEmpty()) return acc
   return if(this[0] == '\\') when(this[1]) {
     '"' -> drop(2).jsonUnescape("$acc\"")
@@ -29,12 +29,12 @@ tailrec fun String.jsonUnescape(acc:String=""):String {
   } else tail.jsonUnescape(acc+this[0])
 }
 
-fun String.indent(spaces:Int=2) =
+internal fun String.indent(spaces:Int=2) =
   split("\n").map { " ".repeat(spaces)+it }.joinToString("\n")
 
-val String.head get() = getOrNull(0)
-val String.tail get() = drop(1)
-val <T, C : Collection<T>> C.head get():T? = elementAtOrNull(0)
-val <T, C : Collection<T>> C.tail get():List<T> = drop(1)
-operator fun Regex.contains(text:Char):Boolean = contains(text.toString())
-operator fun Regex.contains(text:CharSequence):Boolean = this.matches(text)
+internal val String.head get() = getOrNull(0)
+internal val String.tail get() = drop(1)
+internal val <T, C : Collection<T>> C.head get():T? = elementAtOrNull(0)
+internal val <T, C : Collection<T>> C.tail get():List<T> = drop(1)
+internal operator fun Regex.contains(text:Char):Boolean = contains(text.toString())
+internal operator fun Regex.contains(text:CharSequence):Boolean = this.matches(text)
