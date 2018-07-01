@@ -1,21 +1,43 @@
 package com.tripl3dogdare.havenjson
 
-/** JSON-boxed Int */
+/**
+ * JSON-boxed Int
+ * @see [JsonValue]
+ */
 data class JsonInt(override val value:Int) : JsonValue<Int>()
 
-/** JSON-boxed Float */
+/**
+ * JSON-boxed Float
+ * @see [JsonValue]
+ */
 data class JsonFloat(override val value:Float) : JsonValue<Float>()
 
-/** JSON-boxed Boolean */
+/**
+ * JSON-boxed Boolean
+ * @see [JsonValue]
+ */
 data class JsonBoolean(override val value:Boolean) : JsonValue<Boolean>()
 
-/** JSON-boxed String */
+/**
+ * JSON-boxed String
+ * @see [JsonValue]
+ */
 data class JsonString(override val value:String) : JsonValue<String>() {
   override fun mkString(indent:Int) = "\"${value.jsonEscape()}\""
 }
 
-/** JSON-boxed List */
+/**
+ * JSON-boxed List<Json>
+ * @see [JsonValue]
+ */
 data class JsonArray(override val value:List<Json>) : JsonValue<List<Json>>() {
+  /**
+   * Get a value from this array by index.
+   * Returns [JsonNull] if the index does not exist.
+   *
+   * @param key The index to retrieve
+   * @return The [JsonValue] at the given index, or [JsonNull]
+   */
   override fun get(key:Int) = value.getOrElse(key){JsonNull}
 
   override fun mkString(indent:Int):String {
@@ -33,8 +55,18 @@ data class JsonArray(override val value:List<Json>) : JsonValue<List<Json>>() {
   override fun hashCode() = super.hashCode()
 }
 
-/** JSON-boxed Map */
+/**
+ * JSON-boxed Map<String, Json>
+ * @see [JsonValue]
+ */
 data class JsonObject(override val value:Map<String, Json>) : JsonValue<Map<String, Json>>() {
+  /**
+   * Get a value from this object by key.
+   * Returns [JsonNull] if the key does not exist.
+   *
+   * @param key The key to retrieve
+   * @return The [JsonValue] at the given key, or [JsonNull]
+   */
   override fun get(key:String) = value.getOrElse(key){JsonNull}
 
   override fun mkString(indent:Int):String {
@@ -54,7 +86,10 @@ data class JsonObject(override val value:Map<String, Json>) : JsonValue<Map<Stri
   override fun hashCode() = super.hashCode()
 }
 
-/** JSON-boxed null */
+/**
+ * JSON-boxed null
+ * @see [JsonValue]
+ */
 object JsonNull : JsonValue<Nothing?>() {
   override val value = null
   override fun mkString(indent:Int) = "null"
