@@ -1,0 +1,166 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>JsonObject - haven-json</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">haven-json</a>&nbsp;/&nbsp;<a href="../index.html">com.tripl3dogdare.havenjson</a>&nbsp;/&nbsp;<a href="./index.html">JsonObject</a><br/>
+<br/>
+<h1>JsonObject</h1>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JsonObject</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html"><span class="identifier">Map</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">,</span>&nbsp;<a href="../-json.html"><span class="identifier">Json</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
+<p>JSON-boxed Map&lt;String, Json&gt;</p>
+<p><strong>See Also</strong><br/>
+<p><a href="../-json-value/index.html">JsonValue</a></p>
+</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">JsonObject</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.JsonObject$<init>(kotlin.collections.Map((kotlin.String, com.tripl3dogdare.havenjson.JsonValue((kotlin.Any)))))/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html"><span class="identifier">Map</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">,</span>&nbsp;<a href="../-json.html"><span class="identifier">Json</span></a><span class="symbol">&gt;</span><span class="symbol">)</span></code>
+<p>JSON-boxed Map&lt;String, Json&gt;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="value.html">value</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">value</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html"><span class="identifier">Map</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">,</span>&nbsp;<a href="../-json.html"><span class="identifier">Json</span></a><span class="symbol">&gt;</span></code>
+<p>The raw value wrapped by a given instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Inherited Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-json-value/as-boolean.html">asBoolean</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">asBoolean</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">?</span></code>
+<p>Get the wrapped value as a Boolean (convenience method for <a href="../-json-value/value.html">value</a>).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-json-value/as-float.html">asFloat</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">asFloat</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html"><span class="identifier">Float</span></a><span class="symbol">?</span></code>
+<p>Get the wrapped value as a Float (convenience method for <a href="../-json-value/value.html">value</a>).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-json-value/as-int.html">asInt</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">asInt</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">?</span></code>
+<p>Get the wrapped value as an Int (convenience method for <a href="../-json-value/value.html">value</a>).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-json-value/as-list.html">asList</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">asList</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="../-json.html"><span class="identifier">Json</span></a><span class="symbol">&gt;</span><span class="symbol">?</span></code>
+<p>Get the wrapped value as a List (convenience method for <a href="../-json-value/value.html">value</a>).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-json-value/as-map.html">asMap</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">asMap</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html"><span class="identifier">Map</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">,</span>&nbsp;<a href="../-json.html"><span class="identifier">Json</span></a><span class="symbol">&gt;</span><span class="symbol">?</span></code>
+<p>Get the wrapped value as a Map&lt;String, Json&gt; (convenience method for <a href="../-json-value/value.html">value</a>).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-json-value/as-string.html">asString</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">asString</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span></code>
+<p>Get the wrapped value as a String (convenience method for <a href="../-json-value/value.html">value</a>).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="equals.html">equals</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">equals</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.JsonObject$equals(kotlin.Any)/other">other</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="get.html">get</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">get</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.JsonObject$get(kotlin.String)/key">key</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span></code>
+<p>Get a value from this object by key.
+Returns <a href="../-json-null/index.html">JsonNull</a> if the key does not exist.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="hash-code.html">hashCode</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">hashCode</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="mk-string.html">mkString</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">mkString</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.JsonObject$mkString(kotlin.Int)/indent">indent</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code>
+<p>Convert this JSON node to a string containing valid JSON.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Inherited Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="../-json-value/get.html">get</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">operator</span> <span class="keyword">fun </span><span class="identifier">get</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.JsonValue$get(kotlin.Int)/key">key</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-json.html"><span class="identifier">Json</span></a></code>
+<p>Get a value from a <a href="../-json-array/index.html">JsonArray</a>. Returns JsonNull by default.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="../-json-value/value.html">value</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">K</span><span class="symbol">&gt;</span> <span class="identifier">value</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-json-value/value.html#K"><span class="identifier">K</span></a><span class="symbol">?</span></code>
+<p>Get the wrapped value as a specific type.
+Returns null if the value cannot be cast to the given type.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
