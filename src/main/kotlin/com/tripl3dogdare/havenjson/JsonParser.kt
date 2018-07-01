@@ -1,5 +1,10 @@
 package com.tripl3dogdare.havenjson
 
+/**
+ * Provides methods for parsing JSON from a string.
+ *
+ * @author Connor Scialdone
+ */
 object JsonParser {
   private sealed class Token(val text: kotlin.String) {
     object ObjectBegin : Token("{")
@@ -19,8 +24,15 @@ object JsonParser {
     object Noop : Token("")
   }
 
+  /** Thrown by [parse] when a parsing error occurs. */
   class JsonParseError(message: String) : Exception(message)
 
+  /**
+   * Parses JSON from a string.
+   *
+   * @param from The source string
+   * @return The parsed [Json]
+   */
   fun parse(from: String): Json {
     val (parsed, tail) = parse(lex(from))
     if (tail.any { it != Token.Noop })

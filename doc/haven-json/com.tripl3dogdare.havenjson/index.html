@@ -1,0 +1,113 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>com.tripl3dogdare.havenjson - haven-json</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">haven-json</a>&nbsp;/&nbsp;<a href="./index.html">com.tripl3dogdare.havenjson</a><br/>
+<br/>
+<h2>Package com.tripl3dogdare.havenjson</h2>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-json-array/index.html">JsonArray</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JsonArray</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="-json.html"><span class="identifier">Json</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
+<p>JSON-boxed List</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-boolean/index.html">JsonBoolean</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JsonBoolean</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">&gt;</span></code>
+<p>JSON-boxed Boolean</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-float/index.html">JsonFloat</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JsonFloat</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html"><span class="identifier">Float</span></a><span class="symbol">&gt;</span></code>
+<p>JSON-boxed Float</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-int/index.html">JsonInt</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JsonInt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">&gt;</span></code>
+<p>JSON-boxed Int</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-null/index.html">JsonNull</a></p>
+</td>
+<td>
+<code><span class="keyword">object </span><span class="identifier">JsonNull</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a><span class="symbol">?</span><span class="symbol">&gt;</span></code>
+<p>JSON-boxed null</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-object/index.html">JsonObject</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JsonObject</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html"><span class="identifier">Map</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">,</span>&nbsp;<a href="-json.html"><span class="identifier">Json</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
+<p>JSON-boxed Map&lt;String, Json&gt;</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-parser/index.html">JsonParser</a></p>
+</td>
+<td>
+<code><span class="keyword">object </span><span class="identifier">JsonParser</span></code>
+<p>Provides methods for parsing JSON from a string.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-string/index.html">JsonString</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">JsonString</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span></code>
+<p>JSON-boxed String</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-json-value/index.html">JsonValue</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">JsonValue</span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span></code>
+<p>The main wrapper for a JSON-compatible value.
+Implemented for each of the different JSON-supported data types.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Type Aliases</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-json.html">Json</a></p>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Json</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="-json-value/index.html"><span class="identifier">JsonValue</span></a><span class="symbol">&lt;</span><span class="identifier">*</span><span class="symbol">&gt;</span></code>
+<p>Type alias for <a href="-json-value/index.html">JsonValue</a>&lt;*&gt;</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -1,11 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.2.50'
-    repositories { mavenCentral() }
-    dependencies { classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" }
+    repositories { mavenCentral(); jcenter(); }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.50"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.17"
+    }
 }
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.2.50'
+    id 'org.jetbrains.dokka' version '0.9.17'
 }
 
 group 'com.tripl3dogdare'
@@ -25,3 +28,8 @@ dependencies {
 
 compileKotlin { kotlinOptions.jvmTarget = "1.8" }
 compileTestKotlin { kotlinOptions.jvmTarget = "1.8" }
+
+dokka {
+    outputFormat = 'html'
+    outputDirectory = "doc"
+}

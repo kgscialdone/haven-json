@@ -1,0 +1,36 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>JsonValue.invoke - haven-json</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">haven-json</a>&nbsp;/&nbsp;<a href="../index.html">com.tripl3dogdare.havenjson</a>&nbsp;/&nbsp;<a href="index.html">JsonValue</a>&nbsp;/&nbsp;<a href="./invoke.html">invoke</a><br/>
+<br/>
+<h1>invoke</h1>
+<a name="com.tripl3dogdare.havenjson.JsonValue.Companion$invoke(kotlin.Any)"></a>
+<code><span class="keyword">operator</span> <span class="keyword">fun </span><span class="identifier">invoke</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.JsonValue.Companion$invoke(kotlin.Any)/v">v</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-json.html"><span class="identifier">Json</span></a></code>
+<p>DSL method for wrapping a value.
+Recursively calls itself for elements of Lists/Maps.
+Calls <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/to-string.html">toString</a> on any unknown types.</p>
+<h3>Parameters</h3>
+<p><a name="v"></a>
+<code>v</code> - The value to wrap</p>
+<p><strong>Return</strong><br/>
+The wrapped <a href="index.html">JsonValue</a></p>
+<a name="com.tripl3dogdare.havenjson.JsonValue.Companion$invoke(kotlin.Array((kotlin.Pair((kotlin.String, kotlin.Any)))))"></a>
+<code><span class="keyword">operator</span> <span class="keyword">fun </span><span class="identifier">invoke</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="com.tripl3dogdare.havenjson.JsonValue.Companion$invoke(kotlin.Array((kotlin.Pair((kotlin.String, kotlin.Any)))))/vs">vs</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html"><span class="identifier">Pair</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">,</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-json.html"><span class="identifier">Json</span></a></code>
+<p>DSL method for wrapping a value.
+Removes the need to wrap contents in <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/map-of.html">mapOf</a> when creating a <a href="../-json-object/index.html">JsonObject</a>.</p>
+<p><strong>See Also</strong><br/>
+<p><a href="./invoke.html">invoke</a></p>
+</p>
+<a name="com.tripl3dogdare.havenjson.JsonValue.Companion$invoke(kotlin.Array((kotlin.Any)))"></a>
+<code><span class="keyword">operator</span> <span class="keyword">fun </span><span class="identifier">invoke</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="com.tripl3dogdare.havenjson.JsonValue.Companion$invoke(kotlin.Array((kotlin.Any)))/vs">vs</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-json.html"><span class="identifier">Json</span></a></code>
+<p>DSL method for wrapping a value.
+Removes the need to wrap contents in <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/list-of.html">listOf</a> when creating a <a href="../-json-array/index.html">JsonArray</a>.</p>
+<p><strong>See Also</strong><br/>
+<p><a href="./invoke.html">invoke</a></p>
+</p>
+</BODY>
+</HTML>
