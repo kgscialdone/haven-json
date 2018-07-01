@@ -1,7 +1,7 @@
 package com.tripl3dogdare.havenjson
 
 object JsonParser {
-  sealed class Token(val text: kotlin.String) {
+  private sealed class Token(val text: kotlin.String) {
     object ObjectBegin : Token("{")
     object ObjectEnd : Token("}")
     object ArrayBegin : Token("[")
