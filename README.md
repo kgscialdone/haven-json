@@ -53,19 +53,20 @@ data-binding capabilities for Haven as an addon library, feel free to let me kno
 sure to link you here.
 
 ## Installation
-You can install Haven with [JitPack](https://jitpack.io/#tripl3dogdare/haven-json)
-(Gradle example shown below) or download the source code and build it yourself.
+You can install Haven with [JitPack](https://jitpack.io/#tripl3dogdare/haven-json) (Gradle example 
+shown below), check out the [Releases](https://github.com/tripl3dogdare/haven-json/releases) 
+page, or download the source code and build it yourself.
 
 ```groovy
 allprojects {
-    repositories {
-        // ...
-        maven { url 'https://jitpack.io' }
-    }
+  repositories {
+    // ...
+    maven { url 'https://jitpack.io' }
+  }
 }
 
 dependencies {
-    implementation 'com.github.tripl3dogdare:haven-json:master-SNAPSHOT'
+  implementation 'com.github.tripl3dogdare:haven-json:1.0.0'
 }
 ```
 
