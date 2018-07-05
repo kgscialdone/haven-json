@@ -19,9 +19,9 @@ interface JsonSchema {
   }
 
   open class Registry {
-    val customDeserializers: MutableMap<KClass<Any>, (Any) -> Any> = mutableMapOf()
+    val deserializers: MutableMap<KClass<Any>, (Any) -> Any> = mutableMapOf()
     fun <J, T> registerDeserializer(f: (J) -> T):Registry {
-      customDeserializers.put(f.reflect()!!.returnType.classifier as KClass<Any>, f as (Any) -> Any)
+      deserializers.put(f.reflect()!!.returnType.classifier as KClass<Any>, f as (Any) -> Any)
       return this
     }
     companion object defaultInstance : Registry()
@@ -121,8 +121,8 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
         deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter)
-      registry.customDeserializers.containsKey(it.type.classifier) -> {
-        val deser = registry.customDeserializers[it.type.classifier]!!
+      registry.deserializers.containsKey(it.type.classifier) -> {
+        val deser = registry.deserializers[it.type.classifier]!!
         val intyp = deser.reflect()!!.parameters[0].type
 
         try {
