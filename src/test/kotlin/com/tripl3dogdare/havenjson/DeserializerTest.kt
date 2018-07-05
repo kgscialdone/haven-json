@@ -116,6 +116,10 @@ class DeserializerTest : WordSpec({
       )
     }
 
+    "deserialize to normal functions (not local/anon/lambda)" {
+      Json.deserialize(::normalFunction, """{"name":"Santa Claus","age":500}""")
+    }
+
     "apply name converter functions" {
       val camelCase = Json.deserialize(::NamesCamel, """{
         "camel_case": true,
@@ -230,4 +234,12 @@ class DeserializerTest : WordSpec({
 
   data class CustomDeser(val date:ZonedDateTime) : JsonSchema
   data class CustomDeserList(val dates:List<ZonedDateTime>) : JsonSchema
+
+  companion object {
+    fun normalFunction(name:String, age:Int):JsonSchema {
+      name shouldBe "Santa Claus"
+      age shouldBe 500
+      return object:JsonSchema{}
+    }
+  }
 }
