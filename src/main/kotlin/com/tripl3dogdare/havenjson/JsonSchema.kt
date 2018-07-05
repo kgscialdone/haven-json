@@ -2,6 +2,7 @@ package com.tripl3dogdare.havenjson
 
 import kotlin.reflect.*
 import kotlin.reflect.full.*
+import kotlin.reflect.jvm.reflect
 
 interface JsonSchema {
   companion object {
@@ -12,17 +13,54 @@ interface JsonSchema {
       { it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }
     val SNAKE_TO_CAMEL:NameConverter =
       { it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() }}
+
+    val defaultRegistry get() = Registry.defaultInstance
+    fun <J, T> registerDeserializer(f: (J) -> T) = defaultRegistry.registerDeserializer(f)
+  }
+
+  open class Registry {
+    val customDeserializers: MutableMap<KClass<Any>, (Any) -> Any> = mutableMapOf()
+    fun <J, T> registerDeserializer(f: (J) -> T):Registry {
+      customDeserializers.put(f.reflect()!!.returnType.classifier as KClass<Any>, f as (Any) -> Any)
+      return this
+    }
+
+    companion object {
+      val defaultInstance = object : Registry() {}
+    }
   }
 }
 
-fun <T: JsonSchema> JsonValue.Companion.deserialize(clazz:KClass<T>, raw:String) = deserialize(clazz, Json.parse(raw))
-fun <T: JsonSchema> JsonValue.Companion.deserialize(clazz:KClass<T>, raw:Json) = deserialize(clazz, raw, JsonSchema.AS_WRITTEN)
-fun <T: JsonSchema> JsonValue.Companion.deserialize(clazz:KClass<T>, raw:String, nameConverter:NameConverter) = deserialize(clazz.primaryConstructor!!, Json.parse(raw), nameConverter)
-fun <T: JsonSchema> JsonValue.Companion.deserialize(clazz:KClass<T>, raw:Json, nameConverter:NameConverter) = deserialize(clazz.primaryConstructor!!, raw, nameConverter)
-fun <T: JsonSchema> JsonValue.Companion.deserialize(constructor:KFunction<T>, raw:String) = deserialize(constructor, Json.parse(raw))
-fun <T: JsonSchema> JsonValue.Companion.deserialize(constructor:KFunction<T>, raw:String, nameConverter:NameConverter) = deserialize(constructor, Json.parse(raw), nameConverter)
-fun <T: JsonSchema> JsonValue.Companion.deserialize(constructor:KFunction<T>, raw:Json) = deserialize(constructor, raw, JsonSchema.AS_WRITTEN)
-fun <T: JsonSchema> JsonValue.Companion.deserialize(constructor:KFunction<T>, raw:Json, nameConverter:NameConverter):T {
+fun <T: JsonSchema> JsonValue.Companion.deserialize(
+  clazz:KClass<T>,
+  raw:String,
+  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
+  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+) =
+  deserialize(clazz, Json.parse(raw), nameConverter, registry)
+
+fun <T: JsonSchema> JsonValue.Companion.deserialize(
+  clazz:KClass<T>,
+  raw:Json,
+  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
+  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+) =
+  deserialize(clazz.primaryConstructor!!, raw, nameConverter, registry)
+
+fun <T: JsonSchema> JsonValue.Companion.deserialize(
+  constructor:KFunction<T>,
+  raw:String,
+  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
+  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+) =
+  deserialize(constructor, Json.parse(raw), nameConverter, registry)
+
+fun <T: JsonSchema> JsonValue.Companion.deserialize(
+  constructor:KFunction<T>,
+  raw:Json,
+  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
+  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+):T {
   val params = raw.asMap!!.keys.map { name ->
     val json = raw[name]
     val it = constructor.parameters.find { it.name == nameConverter(name) }
@@ -71,7 +109,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(constructor:KFunction<T>, ra
               if(listTypeRaw.isMarkedNullable && j.value == null) null else {
                 if(!j::class.createType().isSubtypeOf(jsonObject))
                   throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}")
-                deserialize(listType.classifier as JDKlass, j, nameConverter)
+                deserialize(listType.classifier as KClass<JsonSchema>, j, nameConverter)
               }
             }
 
@@ -83,7 +121,20 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(constructor:KFunction<T>, ra
       }
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
-        deserialize(it.type.classifier as JDKlass, json, nameConverter)
+        deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter)
+      registry.customDeserializers.containsKey(it.type.classifier) -> {
+        val deser = registry.customDeserializers[it.type.classifier]!!
+        val intyp = deser.reflect()!!.parameters[0].type
+
+        try {
+          if(intyp.isSubtypeOf(jsonType))
+            (it.type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json)))
+          else
+            (it.type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json.value)))
+        } catch(e:Exception) {
+          throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
+        }
+      }
 
       else ->
         throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
@@ -94,7 +145,6 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(constructor:KFunction<T>, ra
 }
 
 private typealias NameConverter = (String) -> String
-private typealias JDKlass = KClass<JsonSchema>
 
 private val intType = Int::class.createType()
 private val floatType = Float::class.createType()
