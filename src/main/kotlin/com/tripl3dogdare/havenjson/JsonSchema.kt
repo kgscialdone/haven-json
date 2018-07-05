@@ -20,9 +20,9 @@ interface JsonSchema {
   }
 
   open class Registry {
-    val deserializers: MutableMap<KClass<Any>, (Any) -> Any> = mutableMapOf()
+    val deserializers: MutableMap<KClass<*>, (Any) -> Any> = mutableMapOf()
     inline fun <J, reified T> registerDeserializer(noinline f: (J) -> T):Registry {
-      deserializers.put(T::class as KClass<Any>, f as (Any) -> Any)
+      deserializers.put(T::class, f as (Any) -> Any)
       return this
     }
     companion object defaultInstance : Registry()
