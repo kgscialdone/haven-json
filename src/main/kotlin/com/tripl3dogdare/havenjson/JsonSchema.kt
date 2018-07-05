@@ -60,8 +60,10 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 ):T {
   val params = raw.asMap!!.keys.map { name ->
     val json = raw[name]
-    val it = constructor.parameters.find { it.name == nameConverter(name) }
-      ?: throw NullPointerException("Could not deserialize JSON parameter $name, no constructor parameter found by name ${nameConverter(name)}")
+    val it = constructor.parameters.find {
+      it.isAnnotated<JsonProperty> { name == it.name } ||
+      !it.isAnnotated<JsonProperty>() && it.name == nameConverter(name)
+    } ?: throw NullPointerException("Could not deserialize JSON parameter $name, no matching constructor parameter found")
 
     Pair(it, when {
       it.type == jsonType -> json
@@ -140,6 +142,10 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 
   return constructor.callBy(params.toMap())
 }
+
+annotation class JsonProperty(val name:String)
+private inline fun <reified A: Annotation> KParameter.isAnnotated(pred:(A) -> Boolean = {true}) =
+  this.annotations.any { it.annotationClass == A::class && pred(it as A) }
 
 private typealias NameConverter = (String) -> String
 
