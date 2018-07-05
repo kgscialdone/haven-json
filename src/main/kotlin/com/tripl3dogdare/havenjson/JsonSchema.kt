@@ -24,10 +24,7 @@ interface JsonSchema {
       customDeserializers.put(f.reflect()!!.returnType.classifier as KClass<Any>, f as (Any) -> Any)
       return this
     }
-
-    companion object {
-      val defaultInstance = object : Registry() {}
-    }
+    companion object defaultInstance : Registry()
   }
 }
 
