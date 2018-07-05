@@ -131,6 +131,15 @@ class DeserializerTest : WordSpec({
       snakeCase shouldBe NamesSnake(false, listOf("camel_case", "property_names"))
     }
 
+    "use the JsonProperty annotation to resolve names" {
+      val deser = Json.deserialize(::NamesChanged, """{
+        "camel_case": true,
+        "propNames": ["camelCase", "propertyNames"]
+      }""", JsonSchema.SNAKE_TO_CAMEL)
+
+      deser shouldBe NamesChanged(true, listOf("camelCase", "propertyNames"))
+    }
+
     "apply custom deserializers" {
       JsonSchema.registerDeserializer(ZonedDateTime::parse)
       Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""") shouldBe
@@ -209,6 +218,11 @@ class DeserializerTest : WordSpec({
   data class NamesSnake(
     val camel_case:Boolean,
     val property_names:List<String>
+  ) : JsonSchema
+
+  data class NamesChanged(
+    val camelCase:Boolean,
+    @JsonProperty("propNames") val propertyNames:List<String>
   ) : JsonSchema
 
   data class CustomDeser(val date:ZonedDateTime) : JsonSchema
