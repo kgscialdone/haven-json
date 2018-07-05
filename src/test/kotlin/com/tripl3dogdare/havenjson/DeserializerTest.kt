@@ -2,6 +2,7 @@ package com.tripl3dogdare.havenjson
 
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
+import java.time.ZonedDateTime
 
 class DeserializerTest : WordSpec({
   "JsonValue#deserialize" should {
@@ -129,6 +130,16 @@ class DeserializerTest : WordSpec({
       camelCase shouldBe NamesCamel(true, listOf("camelCase", "propertyNames"))
       snakeCase shouldBe NamesSnake(false, listOf("camel_case", "property_names"))
     }
+
+    "apply custom deserializers" {
+      JsonSchema.registerDeserializer(ZonedDateTime::parse)
+      Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""") shouldBe
+        CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
+
+      val reg = JsonSchema.Registry().registerDeserializer(ZonedDateTime::parse)
+      Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""", registry=reg) shouldBe
+        CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
+    }
   }
 }) {
   data class BasicTypes(
@@ -199,4 +210,6 @@ class DeserializerTest : WordSpec({
     val camel_case:Boolean,
     val property_names:List<String>
   ) : JsonSchema
+
+  data class CustomDeser(val date:ZonedDateTime) : JsonSchema
 }
