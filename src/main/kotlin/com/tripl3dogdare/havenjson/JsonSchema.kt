@@ -15,13 +15,14 @@ interface JsonSchema {
       { it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() }}
 
     val defaultRegistry get() = Registry.defaultInstance
-    fun <J, T> registerDeserializer(f: (J) -> T) = defaultRegistry.registerDeserializer(f)
+    inline fun <J, reified T> registerDeserializer(noinline f: (J) -> T) =
+      defaultRegistry.registerDeserializer(f)
   }
 
   open class Registry {
     val deserializers: MutableMap<KClass<Any>, (Any) -> Any> = mutableMapOf()
-    fun <J, T> registerDeserializer(f: (J) -> T):Registry {
-      deserializers.put(f.reflect()!!.returnType.classifier as KClass<Any>, f as (Any) -> Any)
+    inline fun <J, reified T> registerDeserializer(noinline f: (J) -> T):Registry {
+      deserializers.put(T::class as KClass<Any>, f as (Any) -> Any)
       return this
     }
     companion object defaultInstance : Registry()
