@@ -57,7 +57,10 @@ class DeserializerTest : WordSpec({
         "floatList" to listOf(1f, 2f, 3f),
         "stringList" to listOf("test", "hi", "derp", "yay"),
         "booleanList" to listOf(true, false, false),
-        "nullStringList" to listOf("test", null, "derp")
+        "nullStringList" to listOf("test", null, "derp"),
+        "stringNullList" to null,
+        "nullStringNullList1" to null,
+        "nullStringNullList2" to listOf("test", null, "derp")
       ))
 
       deser shouldBe BasicLists(
@@ -65,6 +68,9 @@ class DeserializerTest : WordSpec({
         listOf(1f, 2f, 3f),
         listOf("test", "hi", "derp", "yay"),
         listOf(true, false, false),
+        listOf("test", null, "derp"),
+        null,
+        null,
         listOf("test", null, "derp")
       )
     }
@@ -155,7 +161,10 @@ class DeserializerTest : WordSpec({
     val floatList:List<Float>,
     val stringList:List<String>,
     val booleanList:List<Boolean>,
-    val nullStringList:List<String?>
+    val nullStringList:List<String?>,
+    val stringNullList:List<String>?,
+    val nullStringNullList1:List<String?>?,
+    val nullStringNullList2:List<String?>?
   ) : JsonSchema
 
   data class JsonLists(
