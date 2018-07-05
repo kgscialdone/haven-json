@@ -59,12 +59,14 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
   nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   registry:JsonSchema.Registry = JsonSchema.defaultRegistry
 ):T {
+  if(raw !is JsonObject)
+    throw ClassCastException("Cannot deserialize JsonSchema from non-object JSON value")
   val params = raw.asMap!!.keys.map { name ->
     val json = raw[name]
     val it = constructor.parameters.find {
       it.isAnnotated<JsonProperty> { name == it.name } ||
       !it.isAnnotated<JsonProperty>() && it.name == nameConverter(name)
-    } ?: throw NullPointerException("Could not deserialize JSON parameter $name, no matching constructor parameter found")
+    } ?: throw NoSuchFieldException("Cannot deserialize JSON parameter $name, no matching constructor parameter found")
 
     Pair(it, when {
       it.type == jsonType -> json

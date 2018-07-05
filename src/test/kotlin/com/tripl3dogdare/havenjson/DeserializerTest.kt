@@ -3,6 +3,8 @@ package com.tripl3dogdare.havenjson
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
 import java.time.ZonedDateTime
+import io.kotlintest.shouldThrow
+import java.util.*
 
 class DeserializerTest : WordSpec({
   "JsonValue#deserialize" should {
@@ -156,6 +158,56 @@ class DeserializerTest : WordSpec({
       Json.deserialize(::CustomDeserList, """{"dates":["2018-07-05T18:13:59+00:00"]}""") shouldBe
         CustomDeserList(listOf(ZonedDateTime.parse("2018-07-05T18:13:59+00:00")))
     }
+
+    "throw when given anything but a JSON object" {
+      shouldThrow<ClassCastException> {
+        Json.deserialize(::BasicTypes, "[100, 200, 300]")
+      }.also {
+        it.message shouldBe "Cannot deserialize JsonSchema from non-object JSON value"
+      }
+    }
+
+    "throw when given a JSON property with no matching parameter" {
+      shouldThrow<NoSuchFieldException> {
+        Json.deserialize(::BasicTypes, Json("nonexistant" to "derp"))
+      }.also {
+        it.message shouldBe "Cannot deserialize JSON parameter nonexistant, no matching constructor parameter found"
+      }
+    }
+
+    "throw when given null for a non-nullable parameter" {
+      shouldThrow<NullPointerException> {
+        Json.deserialize(::BasicTypes, Json("string" to null))
+      }.also {
+        it.message shouldBe "Cannot cast null JSON parameter string to non-nullable type kotlin.String"
+      }
+    }
+
+    "throw when given a non-object for a nested schema" {
+      shouldThrow<ClassCastException> {
+        Json.deserialize(::Nested, Json("inner" to "test"))
+      }.also {
+        it.message shouldBe "Cannot cast value of JSON parameter inner to com.tripl3dogdare.havenjson.DeserializerTest.Inner"
+      }
+    }
+
+    "throw when encountering a non-deserializable type" {
+      shouldThrow<ClassCastException> {
+        Json.deserialize(::Undeserializable, Json("error" to "test")) }.also {
+        it.message shouldBe "Cannot cast value of JSON parameter error to com.tripl3dogdare.havenjson.DeserializerTest.Undeserializable" }
+      shouldThrow<ClassCastException> {
+        Json.deserialize(::UndeserializableList, Json("error" to listOf("test"))) }.also {
+        it.message shouldBe "Cannot cast value of JSON parameter error[0] to com.tripl3dogdare.havenjson.DeserializerTest.Undeserializable" }
+    }
+
+    "throw when a deserializer expects an invalid input type" {
+      shouldThrow<ClassCastException> {
+        JsonSchema.registerDeserializer<Date, Date> { it }
+        Json.deserialize(::InvalidDeser, Json("invalid" to "deserializer"))
+      }.also {
+        it.message shouldBe "Cannot cast value of JSON parameter invalid to java.util.Date"
+      }
+    }
   }
 }) {
   data class BasicTypes(
@@ -234,6 +286,10 @@ class DeserializerTest : WordSpec({
 
   data class CustomDeser(val date:ZonedDateTime) : JsonSchema
   data class CustomDeserList(val dates:List<ZonedDateTime>) : JsonSchema
+
+  data class Undeserializable(val error:Undeserializable) : JsonSchema
+  data class UndeserializableList(val error:List<Undeserializable>) : JsonSchema
+  data class InvalidDeser(val invalid:Date) : JsonSchema
 
   companion object {
     fun normalFunction(name:String, age:Int):JsonSchema {
