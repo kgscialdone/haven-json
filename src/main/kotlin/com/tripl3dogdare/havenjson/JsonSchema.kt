@@ -4,31 +4,58 @@ import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.reflect
 
+/**
+ * Base class for deserializable objects.
+ * Inheriting from this marks a class as a valid target for [JsonValue.Companion.deserialize].
+ */
 interface JsonSchema {
   companion object {
+    /** Name converter function that leaves names as-is. */
     val AS_WRITTEN:NameConverter = { it }
+    /** Name converter function that converts names to uppercase. */
     val UPPERCASE:NameConverter = String::toUpperCase
+    /** Name converter function that converts names to lowercase. */
     val LOWERCASE:NameConverter = String::toLowerCase
+    /** Name converter function that converts names from camelCase to snake_case. */
     val CAMEL_TO_SNAKE:NameConverter =
       { it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }
+    /** Name converter function that converts names from snake_case to camelCase. */
     val SNAKE_TO_CAMEL:NameConverter =
       { it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() }}
 
+    /** The default [Registry] instance. */
     val defaultRegistry get() = Registry.defaultInstance
+
+    /**
+     * Add a deserializer function to the default registry.
+     * @see [Registry.registerDeserializer]
+     */
     inline fun <J, reified T> registerDeserializer(noinline f: (J) -> T) =
       defaultRegistry.registerDeserializer(f)
   }
 
+  /** Base class for storing custom deserializer functions. */
   open class Registry {
-    val deserializers: MutableMap<KClass<*>, (Any) -> Any> = mutableMapOf()
+    /** The underlying map of deserializers. **/
+    val deserializers:MutableMap<KClass<*>, (Any) -> Any> = mutableMapOf()
+
+    /**
+     * Add a deserializer function to this registry.
+     * @param J The input type (subclass of [JsonValue] or valid type to be contained by [JsonValue]).
+     * @param T The output type.
+     * @param f The deserializer function.
+     */
     inline fun <J, reified T> registerDeserializer(noinline f: (J) -> T):Registry {
       deserializers.put(T::class, f as (Any) -> Any)
       return this
     }
+
+    /** The default Registry instance. */
     companion object defaultInstance : Registry()
   }
 }
 
+/** Deserialize a JSON string via the primary constructor of the given class. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:String,
@@ -37,6 +64,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 ) =
   deserialize(clazz, Json.parse(raw), nameConverter, registry)
 
+/** Deserialize a [JsonValue] via the primary constructor of the given class. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:Json,
@@ -45,6 +73,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 ) =
   deserialize(clazz.primaryConstructor!!, raw, nameConverter, registry)
 
+/** Deserialize a JSON string via the given constructor. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:String,
@@ -53,6 +82,22 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 ) =
   deserialize(constructor, Json.parse(raw), nameConverter, registry)
 
+/**
+ * Deserialize a [JsonValue] via the given constructor.
+ *
+ * @param T The type to return. Must inherit from [JsonSchema].
+ * @param constructor The constructor function to call.
+ * @param raw The raw [JsonValue].
+ * @param nameConverter The function to use to convert JSON property names into matching constructor parameter names.
+ * @param registry The [JsonSchema.Registry] instance to use for custom deserialization functions.
+ * @return The results of calling the given constructor with named parameters corresponding to the property names of
+ *         the given JSON object.
+ *
+ * @throws NullPointerException if a non-nullable parameter corresponds to a JSON property containing null.
+ * @throws ClassCastException if the passed [JsonValue] is not a [JsonObject].
+ * @throws ClassCastException if a parameter corresponds to a JSON property of the wrong type.
+ * @throws NoSuchFieldException if a JSON property is found without a corresponding constructor parameter.
+ */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:Json,
@@ -151,6 +196,11 @@ private fun applyDeserializer(type:KType, json:Json, name:String, registry:JsonS
   }
 }
 
+/**
+ * Marks a constructor parameter to be deserialized from a specific property name.
+ * Overrides the nameConverter parameter of [deserialize].
+ * @property name The name of the JSON property this parameter should take it's value from when deserialized.
+ */
 annotation class JsonProperty(val name:String)
 private inline fun <reified A: Annotation> KParameter.isAnnotated(pred:(A) -> Boolean = {true}) =
   this.annotations.any { it.annotationClass == A::class && pred(it as A) }
