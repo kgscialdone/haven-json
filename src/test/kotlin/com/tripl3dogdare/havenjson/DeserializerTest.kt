@@ -148,6 +148,9 @@ class DeserializerTest : WordSpec({
       val reg = JsonSchema.Registry().registerDeserializer(ZonedDateTime::parse)
       Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""", registry=reg) shouldBe
         CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
+
+      Json.deserialize(::CustomDeserList, """{"dates":["2018-07-05T18:13:59+00:00"]}""") shouldBe
+        CustomDeserList(listOf(ZonedDateTime.parse("2018-07-05T18:13:59+00:00")))
     }
   }
 }) {
@@ -226,4 +229,5 @@ class DeserializerTest : WordSpec({
   ) : JsonSchema
 
   data class CustomDeser(val date:ZonedDateTime) : JsonSchema
+  data class CustomDeserList(val dates:List<ZonedDateTime>) : JsonSchema
 }

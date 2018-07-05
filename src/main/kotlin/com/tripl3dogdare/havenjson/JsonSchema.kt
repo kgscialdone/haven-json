@@ -112,6 +112,8 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
                 deserialize(listType.classifier as KClass<JsonSchema>, j, nameConverter)
               }
             }
+          registry.deserializers.containsKey(listType.classifier) ->
+            json.value.map { j -> applyDeserializer(listType, j, name, registry) }
 
           else ->
             throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
@@ -122,19 +124,8 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
         deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter)
-      registry.deserializers.containsKey(it.type.classifier) -> {
-        val deser = registry.deserializers[it.type.classifier]!!
-        val intyp = deser.reflect()!!.parameters[0].type
-
-        try {
-          if(intyp.isSubtypeOf(jsonType))
-            (it.type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json)))
-          else
-            (it.type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json.value)))
-        } catch(e:Exception) {
-          throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
-        }
-      }
+      registry.deserializers.containsKey(it.type.classifier) ->
+        applyDeserializer(it.type, json, name, registry)
 
       else ->
         throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
@@ -142,6 +133,20 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
   }
 
   return constructor.callBy(params.toMap())
+}
+
+private fun applyDeserializer(type:KType, json:Json, name:String, registry:JsonSchema.Registry):Any {
+  val deser = registry.deserializers[type.classifier]!!
+  val intyp = deser.reflect()!!.parameters[0].type
+
+  return try {
+    if(intyp.isSubtypeOf(jsonType))
+      (type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json)))
+    else
+      (type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json.value)))
+  } catch(e:Exception) {
+    throw ClassCastException("Cannot cast value of JSON parameter $name to $type")
+  }
 }
 
 annotation class JsonProperty(val name:String)
