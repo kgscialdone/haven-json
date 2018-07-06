@@ -151,7 +151,7 @@ class DeserializerTest : WordSpec({
       Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""") shouldBe
         CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
 
-      val deser = Deserializers().add(ZonedDateTime::parse)
+      val deser = Deserializers().add { j:JsonString -> ZonedDateTime.parse(j.asString!!) }
       Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""", deserializers=deser) shouldBe
         CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
 
