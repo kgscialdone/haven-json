@@ -219,7 +219,10 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
  * Overrides the nameConverter parameter of [deserialize].
  * @property name The name of the JSON property this parameter should take it's value from when deserialized.
  */
+@Target(AnnotationTarget.VALUE_PARAMETER)
+@MustBeDocumented
 annotation class JsonProperty(val name:String)
+
 private inline fun <reified A: Annotation> KParameter.isAnnotated(pred:(A) -> Boolean = {true}) =
   this.annotations.any { it.annotationClass == A::class && pred(it as A) }
 
