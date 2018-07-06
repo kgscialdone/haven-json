@@ -155,8 +155,8 @@ class DeserializerTest : WordSpec({
       Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""", deserializers=deser) shouldBe
         CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
 
-      Json.deserialize(::CustomDeserList, """{"dates":["2018-07-05T18:13:59+00:00"]}""") shouldBe
-        CustomDeserList(listOf(ZonedDateTime.parse("2018-07-05T18:13:59+00:00")))
+      Json.deserialize(::CustomDeserList, """{"dates":["2018-07-05T18:13:59+00:00",null]}""") shouldBe
+        CustomDeserList(listOf(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"), null))
     }
 
     "throw when given anything but a JSON object" {
@@ -285,7 +285,7 @@ class DeserializerTest : WordSpec({
   ) : JsonSchema
 
   data class CustomDeser(val date:ZonedDateTime) : JsonSchema
-  data class CustomDeserList(val dates:List<ZonedDateTime>) : JsonSchema
+  data class CustomDeserList(val dates:List<ZonedDateTime?>) : JsonSchema
 
   data class Undeserializable(val error:Undeserializable) : JsonSchema
   data class UndeserializableList(val error:List<Undeserializable>) : JsonSchema

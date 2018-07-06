@@ -188,9 +188,12 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
             }
           deserializers.has(listType.jvmErasure) ->
             json.value.mapIndexed { i, j ->
-              try { deserializers.deserialize(listType.jvmErasure, j) }
-              catch(e:Exception) {
-                throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}") }}
+              if(listTypeRaw.isMarkedNullable && j.value == null) null else {
+                try { deserializers.deserialize(listType.jvmErasure, j) }
+                catch(e:Exception) {
+                  throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}") }
+              }
+            }
 
           else ->
             throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
