@@ -40,9 +40,8 @@ open class Deserializers {
    * @param T The output type.
    * @param f The deserializer function.
    */
-  inline fun <J, reified T: Any> register(noinline f: (J) -> T) =
-    register(T::class, f)
-  fun <J, T: Any> register(clazz:KClass<T>, f:(J) -> T):Deserializers {
+  inline fun <J, reified T: Any> add(noinline f: (J) -> T) = add(T::class, f)
+  fun <J, T: Any> add(clazz:KClass<T>, f:(J) -> T):Deserializers {
     underlying.put(clazz, f as (Any) -> Any)
     return this
   }
