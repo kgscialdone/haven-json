@@ -11,48 +11,76 @@ import kotlin.reflect.jvm.reflect
 interface JsonSchema {
   companion object {
     /** Name converter function that leaves names as-is. */
-    val AS_WRITTEN:NameConverter = { it }
+    val AS_WRITTEN: NameConverter = { it }
     /** Name converter function that converts names to uppercase. */
-    val UPPERCASE:NameConverter = String::toUpperCase
+    val UPPERCASE: NameConverter = String::toUpperCase
     /** Name converter function that converts names to lowercase. */
-    val LOWERCASE:NameConverter = String::toLowerCase
+    val LOWERCASE: NameConverter = String::toLowerCase
     /** Name converter function that converts names from camelCase to snake_case. */
-    val CAMEL_TO_SNAKE:NameConverter =
+    val CAMEL_TO_SNAKE: NameConverter =
       { it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }
     /** Name converter function that converts names from snake_case to camelCase. */
-    val SNAKE_TO_CAMEL:NameConverter =
-      { it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() }}
+    val SNAKE_TO_CAMEL: NameConverter =
+      { it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }
+  }
+}
 
-    /** The default [Registry] instance. */
-    val defaultRegistry get() = Registry.defaultInstance
+/**
+ * Represents a group of custom deserializer functions.
+ * For most things, you should use [Deserializers.defaultInstance]. If for some
+ *  reason you need to have multiple groups of deserializers, this class is available.
+ */
+open class Deserializers {
+  /** The underlying map of deserializers. **/
+  private val underlying:MutableMap<KClass<*>, (Any) -> Any> = mutableMapOf()
 
-    /**
-     * Add a deserializer function to the default registry.
-     * @see [Registry.registerDeserializer]
-     */
-    inline fun <J, reified T> registerDeserializer(noinline f: (J) -> T) =
-      defaultRegistry.registerDeserializer(f)
+  /**
+   * Add a deserializer function to this group.
+   * @param J The input type (subclass of [JsonValue] or valid type to be contained by [JsonValue]).
+   * @param T The output type.
+   * @param f The deserializer function.
+   */
+  inline fun <J, reified T: Any> register(noinline f: (J) -> T) =
+    register(T::class, f)
+  fun <J, T: Any> register(clazz:KClass<T>, f:(J) -> T):Deserializers {
+    underlying.put(clazz, f as (Any) -> Any)
+    return this
   }
 
-  /** Base class for storing custom deserializer functions. */
-  open class Registry {
-    /** The underlying map of deserializers. **/
-    val deserializers:MutableMap<KClass<*>, (Any) -> Any> = mutableMapOf()
+  /**
+   * Get a deserializer function from this group.
+   * @param t The class you want to get the deserializer for
+   */
+  fun <T: Any> get(t:KClass<T>) = underlying[t] as ((Any) -> T)?
 
-    /**
-     * Add a deserializer function to this registry.
-     * @param J The input type (subclass of [JsonValue] or valid type to be contained by [JsonValue]).
-     * @param T The output type.
-     * @param f The deserializer function.
-     */
-    inline fun <J, reified T> registerDeserializer(noinline f: (J) -> T):Registry {
-      deserializers.put(T::class, f as (Any) -> Any)
-      return this
-    }
+  /**
+   * Returns true if there is a deserializer registered for the given class.
+   * @param t The class to check for.
+   */
+  fun <T: Any> has(t:KClass<T>) = underlying.containsKey(t)
 
-    /** The default Registry instance. */
-    companion object defaultInstance : Registry()
+  /**
+   * Remove a deserializer function from this group.
+   * @param t The class you want to remove the deserializer for
+   */
+  fun <T: Any> remove(t:KClass<T>):Deserializers {
+    underlying.remove(t)
+    return this
   }
+
+  /**
+   * Attempt to deserialize a value with this group.
+   * @param t The class of the output type
+   * @param raw The undeserialized value
+   */
+  fun <T: Any> deserialize(t:KClass<T>, raw:Json):T {
+    val intyp = get(t)!!.reflect()!!.parameters[0].type
+    val incls = intyp.classifier as KClass<*>
+    return t.cast(get(t)!!(incls.cast(if(intyp.isSubtypeOf(jsonType)) raw else raw.value!!)))
+  }
+
+  /** The default Deserializers instance. */
+  companion object defaultInstance : Deserializers()
 }
 
 /** Deserialize a JSON string via the primary constructor of the given class. */
@@ -60,27 +88,27 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:String,
   nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
-  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+  deserializers:Deserializers = Deserializers
 ) =
-  deserialize(clazz, Json.parse(raw), nameConverter, registry)
+  deserialize(clazz, Json.parse(raw), nameConverter, deserializers)
 
 /** Deserialize a [JsonValue] via the primary constructor of the given class. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:Json,
   nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
-  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+  deserializers:Deserializers = Deserializers
 ) =
-  deserialize(clazz.primaryConstructor!!, raw, nameConverter, registry)
+  deserialize(clazz.primaryConstructor!!, raw, nameConverter, deserializers)
 
 /** Deserialize a JSON string via the given constructor. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:String,
   nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
-  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+  deserializers:Deserializers = Deserializers
 ) =
-  deserialize(constructor, Json.parse(raw), nameConverter, registry)
+  deserialize(constructor, Json.parse(raw), nameConverter, deserializers)
 
 /**
  * Deserialize a [JsonValue] via the given constructor.
@@ -89,7 +117,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
  * @param constructor The constructor function to call.
  * @param raw The raw [JsonValue].
  * @param nameConverter The function to use to convert JSON property names into matching constructor parameter names.
- * @param registry The [JsonSchema.Registry] instance to use for custom deserialization functions.
+ * @param deserializers The [Deserializers] instance to use for custom deserialization functions.
  * @return The results of calling the given constructor with named parameters corresponding to the property names of
  *         the given JSON object.
  *
@@ -102,7 +130,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:Json,
   nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
-  registry:JsonSchema.Registry = JsonSchema.defaultRegistry
+  deserializers:Deserializers = Deserializers
 ):T {
   if(raw !is JsonObject)
     throw ClassCastException("Cannot deserialize JsonSchema from non-object JSON value")
@@ -156,11 +184,14 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
               if(listTypeRaw.isMarkedNullable && j.value == null) null else {
                 if(!j::class.createType().isSubtypeOf(jsonObject))
                   throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}")
-                deserialize(listType.classifier as KClass<JsonSchema>, j, nameConverter, registry)
+                deserialize(listType.classifier as KClass<JsonSchema>, j, nameConverter, deserializers)
               }
             }
-          registry.deserializers.containsKey(listType.classifier) ->
-            json.value.map { j -> applyDeserializer(listType, j, name, registry) }
+          deserializers.has(listType.classifier as KClass<*>) ->
+            json.value.mapIndexed { i, j ->
+              try { deserializers.deserialize(listType.classifier as KClass<*>, j) }
+              catch(e:Exception) {
+                throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}") }}
 
           else ->
             throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
@@ -170,9 +201,11 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
       }
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
-        deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter, registry)
-      registry.deserializers.containsKey(it.type.classifier) ->
-        applyDeserializer(it.type, json, name, registry)
+        deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter, deserializers)
+      deserializers.has(it.type.classifier as KClass<*>) ->
+        try { deserializers.deserialize(it.type.classifier as KClass<*>, json) }
+        catch(e:Exception) {
+          throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}") }
 
       else ->
         throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
@@ -180,20 +213,6 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
   }
 
   return constructor.callBy(params.toMap())
-}
-
-private fun applyDeserializer(type:KType, json:Json, name:String, registry:JsonSchema.Registry):Any {
-  val deser = registry.deserializers[type.classifier]!!
-  val intyp = deser.reflect()!!.parameters[0].type
-
-  return try {
-    if(intyp.isSubtypeOf(jsonType))
-      (type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json)))
-    else
-      (type.classifier as KClass<*>).cast(deser((intyp.classifier as KClass<*>).cast(json.value)))
-  } catch(e:Exception) {
-    throw ClassCastException("Cannot cast value of JSON parameter $name to $type")
-  }
 }
 
 /**

@@ -147,12 +147,12 @@ class DeserializerTest : WordSpec({
     }
 
     "apply custom deserializers" {
-      JsonSchema.registerDeserializer(ZonedDateTime::parse)
+      Deserializers.register(ZonedDateTime::parse)
       Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""") shouldBe
         CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
 
-      val reg = JsonSchema.Registry().registerDeserializer(ZonedDateTime::parse)
-      Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""", registry=reg) shouldBe
+      val deser = Deserializers().register(ZonedDateTime::parse)
+      Json.deserialize(::CustomDeser, """{"date":"2018-07-05T18:13:59+00:00"}""", deserializers=deser) shouldBe
         CustomDeser(ZonedDateTime.parse("2018-07-05T18:13:59+00:00"))
 
       Json.deserialize(::CustomDeserList, """{"dates":["2018-07-05T18:13:59+00:00"]}""") shouldBe
@@ -202,7 +202,7 @@ class DeserializerTest : WordSpec({
 
     "throw when a deserializer expects an invalid input type" {
       shouldThrow<ClassCastException> {
-        JsonSchema.registerDeserializer<Date, Date> { it }
+        Deserializers.register<Date, Date> { it }
         Json.deserialize(::InvalidDeser, Json("invalid" to "deserializer"))
       }.also {
         it.message shouldBe "Cannot cast value of JSON parameter invalid to java.util.Date"
