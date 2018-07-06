@@ -2,7 +2,7 @@ package com.tripl3dogdare.havenjson
 
 import kotlin.reflect.*
 import kotlin.reflect.full.*
-import kotlin.reflect.jvm.reflect
+import kotlin.reflect.jvm.*
 
 /**
  * Base class for deserializable objects.
@@ -74,7 +74,7 @@ open class Deserializers {
    */
   fun <T: Any> deserialize(t:KClass<T>, raw:Json):T {
     val intyp = get(t)!!.reflect()!!.parameters[0].type
-    val incls = intyp.classifier as KClass<*>
+    val incls = intyp.jvmErasure
     return t.cast(get(t)!!(incls.cast(if(intyp.isSubtypeOf(jsonType)) raw else raw.value!!)))
   }
 
@@ -183,12 +183,12 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
               if(listTypeRaw.isMarkedNullable && j.value == null) null else {
                 if(!j::class.createType().isSubtypeOf(jsonObject))
                   throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}")
-                deserialize(listType.classifier as KClass<JsonSchema>, j, nameConverter, deserializers)
+                deserialize(listType.jvmErasure as KClass<JsonSchema>, j, nameConverter, deserializers)
               }
             }
-          deserializers.has(listType.classifier as KClass<*>) ->
+          deserializers.has(listType.jvmErasure) ->
             json.value.mapIndexed { i, j ->
-              try { deserializers.deserialize(listType.classifier as KClass<*>, j) }
+              try { deserializers.deserialize(listType.jvmErasure, j) }
               catch(e:Exception) {
                 throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}") }}
 
@@ -200,9 +200,9 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
       }
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
-        deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter, deserializers)
-      deserializers.has(it.type.classifier as KClass<*>) ->
-        try { deserializers.deserialize(it.type.classifier as KClass<*>, json) }
+        deserialize(it.type.jvmErasure as KClass<JsonSchema>, json, nameConverter, deserializers)
+      deserializers.has(it.type.jvmErasure) ->
+        try { deserializers.deserialize(it.type.jvmErasure, json) }
         catch(e:Exception) {
           throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}") }
 
