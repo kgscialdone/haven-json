@@ -156,7 +156,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
               if(listTypeRaw.isMarkedNullable && j.value == null) null else {
                 if(!j::class.createType().isSubtypeOf(jsonObject))
                   throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}")
-                deserialize(listType.classifier as KClass<JsonSchema>, j, nameConverter)
+                deserialize(listType.classifier as KClass<JsonSchema>, j, nameConverter, registry)
               }
             }
           registry.deserializers.containsKey(listType.classifier) ->
@@ -170,7 +170,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
       }
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
-        deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter)
+        deserialize(it.type.classifier as KClass<JsonSchema>, json, nameConverter, registry)
       registry.deserializers.containsKey(it.type.classifier) ->
         applyDeserializer(it.type, json, name, registry)
 
