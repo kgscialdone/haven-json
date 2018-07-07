@@ -30,6 +30,20 @@ class DeserializerTest : WordSpec({
       deser shouldBe NullableTypes(null, null, null, null)
     }
 
+    "deserialize optional parameters" {
+      val included = Json.deserialize(::OptionalParams, Json(
+        "nonoptional" to "test",
+        "optional" to "test"
+      ))
+
+      val notIncluded = Json.deserialize(::OptionalParams, Json(
+        "nonoptional" to "test"
+      ))
+
+      included shouldBe OptionalParams("test", "test")
+      notIncluded shouldBe OptionalParams("test")
+    }
+
     "deserialize JSON types" {
       val deser = Json.deserialize(::JsonTypes, """{
         "json": null,
@@ -183,6 +197,14 @@ class DeserializerTest : WordSpec({
       }
     }
 
+    "throw when not given a non-optional parameter" {
+      shouldThrow<InstantiationException> {
+        Json.deserialize(::OptionalParams, JsonObject(emptyMap()))
+      }.also {
+        it.message shouldBe "Cannot instantiate com.tripl3dogdare.havenjson.DeserializerTest.OptionalParams from JSON, missing non-optional parameters: nonoptional"
+      }
+    }
+
     "throw when given a non-object for a nested schema" {
       shouldThrow<ClassCastException> {
         Json.deserialize(::Nested, Json("inner" to "test"))
@@ -222,6 +244,11 @@ class DeserializerTest : WordSpec({
     val nullFloat:Float?,
     val nullString:String?,
     val nullBoolean:Boolean?
+  ) : JsonSchema
+
+  data class OptionalParams(
+    val nonoptional:String,
+    val optional:String = "test"
   ) : JsonSchema
 
   data class JsonTypes(

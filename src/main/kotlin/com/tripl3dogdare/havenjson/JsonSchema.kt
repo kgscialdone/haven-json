@@ -214,6 +214,13 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
     })
   }
 
+  val missing = constructor.parameters.toSet() - params.map { it.first }.toSet()
+  val missingNonOptional = missing.filter { !it.isOptional }
+  val missingNames = missingNonOptional.map { it.name }.joinToString(", ")
+  if(missingNonOptional.any())
+    throw InstantiationException(
+      "Cannot instantiate ${constructor.returnType} from JSON, missing non-optional parameters: $missingNames")
+
   return constructor.callBy(params.toMap())
 }
 
