@@ -13,10 +13,11 @@ class DeserializerTest : WordSpec({
         "int": 100,
         "float": 100.0,
         "string": "Hello, world!",
-        "boolean": true
+        "boolean": true,
+        "any": "Anything at all!"
       }""")
 
-      deser shouldBe BasicTypes(100, 100f, "Hello, world!", true)
+      deser shouldBe BasicTypes(100, 100f, "Hello, world!", true, "Anything at all!")
     }
 
     "deserialize nullable types" {
@@ -236,7 +237,8 @@ class DeserializerTest : WordSpec({
     val int:Int,
     val float:Float,
     val string:String,
-    val boolean:Boolean
+    val boolean:Boolean,
+    val any:Any
   ) : JsonSchema
 
   data class NullableTypes(
