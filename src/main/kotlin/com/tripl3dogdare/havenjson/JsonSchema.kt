@@ -141,9 +141,8 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
     } ?: throw NoSuchFieldException("Cannot deserialize JSON parameter $name, no matching constructor parameter found")
 
     Pair(it, when {
-      it.type == jsonType -> json
-      it.type == jsonNull && json is JsonNull -> json
       it.type.isMarkedNullable && json is JsonNull -> null
+      it.type.isSupertypeOf(jsonNull) && json is JsonNull -> json
       json is JsonNull ->
         throw NullPointerException("Cannot cast null JSON parameter $name to non-nullable type ${it.type}")
 
@@ -152,55 +151,12 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
       it.type.isSupertypeOf(stringType) && json is JsonString -> json.asString
       it.type.isSupertypeOf(booleanType) && json is JsonBoolean -> json.asBoolean
 
-      it.type == jsonInt && json is JsonInt -> json
-      it.type == jsonFloat && json is JsonFloat -> json
-      it.type == jsonString && json is JsonString -> json
-      it.type == jsonBoolean && json is JsonBoolean -> json
-      it.type == jsonArray && json is JsonArray -> json
-      it.type == jsonObject && json is JsonObject -> json
-
-      json is JsonArray -> {
-        val listTypeRaw = it.type.arguments.first().type!!
-        val listType = listTypeRaw.withNullability(false)
-
-        val list = when {
-          listType.isSupertypeOf(intType) -> json.value.map { it.asInt }
-          listType.isSupertypeOf(floatType) -> json.value.map { it.asFloat }
-          listType.isSupertypeOf(stringType) -> json.value.map { it.asString }
-          listType.isSupertypeOf(booleanType) -> json.value.map { it.asBoolean }
-
-          listType.isSupertypeOf(jsonType) -> json.value
-          listType.isSupertypeOf(jsonInt) -> json.value.map { it as JsonInt }
-          listType.isSupertypeOf(jsonFloat) -> json.value.map { it as JsonFloat }
-          listType.isSupertypeOf(jsonString) -> json.value.map { it as JsonString }
-          listType.isSupertypeOf(jsonBoolean) -> json.value.map { it as JsonBoolean }
-          listType.isSupertypeOf(jsonArray) -> json.value.map { it as JsonArray }
-          listType.isSupertypeOf(jsonObject) -> json.value.map { it as JsonObject }
-          listType.isSupertypeOf(jsonNull) -> json.value.map { it as JsonNull }
-
-          listType.isSubtypeOf(jdeserType) ->
-            json.value.mapIndexed { i, j ->
-              if(listTypeRaw.isMarkedNullable && j.value == null) null else {
-                if(!j::class.createType().isSubtypeOf(jsonObject))
-                  throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}")
-                deserialize(listType.jvmErasure as KClass<JsonSchema>, j, nameConverter, deserializers)
-              }
-            }
-          deserializers.has(listType.jvmErasure) ->
-            json.value.mapIndexed { i, j ->
-              if(listTypeRaw.isMarkedNullable && j.value == null) null else {
-                try { deserializers.deserialize(listType.jvmErasure, j) }
-                catch(e:Exception) {
-                  throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to ${listType}") }
-              }
-            }
-
-          else ->
-            throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
-        }
-
-        if(listTypeRaw.isMarkedNullable) list else list.map { it!! }
-      }
+      it.type.isSupertypeOf(jsonInt) && json is JsonInt -> json
+      it.type.isSupertypeOf(jsonFloat) && json is JsonFloat -> json
+      it.type.isSupertypeOf(jsonString) && json is JsonString -> json
+      it.type.isSupertypeOf(jsonBoolean) && json is JsonBoolean -> json
+      it.type.isSupertypeOf(jsonArray) && json is JsonArray -> json
+      it.type.isSupertypeOf(jsonObject) && json is JsonObject -> json
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
         deserialize(it.type.jvmErasure as KClass<JsonSchema>, json, nameConverter, deserializers)
@@ -208,6 +164,45 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
         try { deserializers.deserialize(it.type.jvmErasure, json) }
         catch(e:Exception) {
           throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}") }
+
+      it.type.withNullability(false).isSubtypeOf(listType) && json is JsonArray -> {
+        val innerTypeRaw = it.type.arguments.first().type!!
+        val innerType = innerTypeRaw.withNullability(false)
+
+        val list = when {
+          innerType.isSupertypeOf(intType) -> json.value.map { it.asInt }
+          innerType.isSupertypeOf(floatType) -> json.value.map { it.asFloat }
+          innerType.isSupertypeOf(stringType) -> json.value.map { it.asString }
+          innerType.isSupertypeOf(booleanType) -> json.value.map { it.asBoolean }
+
+          innerType.isSupertypeOf(jsonType) -> json.value
+          innerType.isSupertypeOf(jsonInt) -> json.value.map { it as JsonInt }
+          innerType.isSupertypeOf(jsonFloat) -> json.value.map { it as JsonFloat }
+          innerType.isSupertypeOf(jsonString) -> json.value.map { it as JsonString }
+          innerType.isSupertypeOf(jsonBoolean) -> json.value.map { it as JsonBoolean }
+          innerType.isSupertypeOf(jsonArray) -> json.value.map { it as JsonArray }
+          innerType.isSupertypeOf(jsonObject) -> json.value.map { it as JsonObject }
+          innerType.isSupertypeOf(jsonNull) -> json.value.map { it as JsonNull }
+
+          innerType.isSubtypeOf(jdeserType) -> deserializeList(json, innerTypeRaw) { i, j ->
+            if(!j::class.createType().isSubtypeOf(jsonObject))
+              throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to $innerType")
+            deserialize(innerType.jvmErasure as KClass<JsonSchema>, j, nameConverter, deserializers)
+          }
+
+          deserializers.has(innerType.jvmErasure) -> deserializeList(json, innerTypeRaw) { i, j ->
+            try { deserializers.deserialize(innerType.jvmErasure, j) }
+            catch(e:Exception) {
+              throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to $innerType") }
+          }
+
+          else ->
+            throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
+        }
+
+        if(innerTypeRaw.isMarkedNullable) list else list.mapIndexed { i, e ->
+          e ?: throw NullPointerException("Cannot cast null JSON parameter $name[$i] to non-nullable type $innerType") }
+      }
 
       else ->
         throw ClassCastException("Cannot cast value of JSON parameter $name to ${it.type}")
@@ -223,6 +218,9 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 
   return constructor.callBy(params.toMap())
 }
+
+private inline fun <T> deserializeList(json:JsonArray, listTypeRaw:KType, f:(Int,Json) -> T) =
+  json.value.mapIndexed { i, j -> if(listTypeRaw.isMarkedNullable && j.value == null) null else f(i,j) }
 
 /**
  * Marks a constructor parameter to be deserialized from a specific property name.
@@ -243,6 +241,7 @@ private val floatType = Float::class.createType()
 private val stringType = String::class.createType()
 private val booleanType = Boolean::class.createType()
 private val jdeserType = JsonSchema::class.createType()
+private val listType = List::class.createType(listOf(KTypeProjection.STAR))
 private val jsonType = JsonValue::class.createType(listOf(KTypeProjection.STAR))
 private val jsonInt = JsonInt::class.createType()
 private val jsonFloat = JsonFloat::class.createType()
