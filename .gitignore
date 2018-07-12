@@ -1,4 +1,5 @@
 *gradle*
+!gradlew*
 !build.gradle
 .idea
 build/
