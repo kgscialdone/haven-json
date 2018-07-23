@@ -80,8 +80,7 @@ dependencies {
   - [x] Minified
   - [x] Pretty-printed at any indentation size
 - [x] [JSON.org](https://json.org) spec compliant JSON parser
-- [ ] Manual data class destructuring conventions
-- [ ] Automatic data class destructuring
+- [x] Data-binding style destructuring
 
 ## Examples
 
@@ -137,7 +136,52 @@ val jwick:Json = Json.parse(string)
 
 **Converting JSON back to a string**
 ```kotlin
-val jwickString2 = jwick.mkString()) // Default is 2-space indentation
+val jwickString2 = jwick.mkString())  // Default is 2-space indentation
 val jwickString0 = jwick.mkString(0)) // Minified
 val jwickString4 = jwick.mkString(4)) // Custom indentation depth in spaces
+```
+
+**Deserializing a class instance from JSON**
+```kotlin
+class Field(name:String, value:String) : JsonSchema
+
+// The first parameter can either be a constructor function (::Name) or a class instance (Name::class)
+//   The passed function or given class's primary constructor must return a subtype of JsonSchema!
+// The second parameter can either be a string (will be parsed as JSON) or an existing Json instance
+val field = Json.deserialize(::Field, """{"name":"Test","value":"test"}""")
+```
+
+**Deserializing with a name converter function**
+```kotlin
+class Thing(thingName:String) : JsonSchema
+
+// The optional third parameter can be any (String) -> String function
+// JsonSchema provides some common defaults like snake case to camel case (shown here)
+val field = Json.deserialize(::Thing, """{"thing_name":"Bob"}""", JsonSchema.SNAKE_TO_CAMEL)
+```
+
+**Deserializing with overridden property names**
+```kotlin
+class Thing( @JsonProperty("thing_name") thingName:String ) : JsonSchema
+
+// This will do the same as the above; useful for when a particular field doesn't follow conventions
+//   or you'd like to explicitly rename something
+val field = Json.deserialize(::Thing, """{"thing_name":"Bob"}""")
+```
+
+**Custom deserializer functions**
+```kotlin
+class WithDate(date:ZonedDateTime) : JsonSchema
+
+// Register a deserializer function with the default group
+// The input and output types of the given function are used to determine what to use
+// Only one deserializer function is allowed per output type
+Deserializers.register(ZonedDateTime::parse) // (String) -> ZonedDateTime
+val withDate = Json.deserialize(::WithDate, """{"date":"2018-07-05T18:13:59+00:00"}""")
+
+// Custom deserializer group
+// Useful for having different ways to deserialize a particular output type or not leaking deserializers
+//   to other functions
+val deser = Deserializers().add(ZonedDateTime::parse)
+val withDate = Json.deserialize(::WithDate, """{"date":"2018-07-05T18:13:59+00:00"}""", deserializers = deser)
 ```
