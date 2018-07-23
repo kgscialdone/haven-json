@@ -1,7 +1,7 @@
 [![Build Status](https://www.travis-ci.com/tripl3dogdare/haven-json.svg?branch=master)](https://www.travis-ci.com/tripl3dogdare/haven-json)
 [![Issue Count](https://img.shields.io/github/issues/tripl3dogdare/haven-json.svg)](https://github.com/tripl3dogdare/haven-json/issues)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
-[![Documentation: Read Now](https://img.shields.io/badge/documentation-read%20now-blue.svg)](http://docs.tripl3dogdare.com/haven-json/1.0.0/)
+[![Documentation: Read Now](https://img.shields.io/badge/documentation-read%20now-blue.svg)](http://docs.tripl3dogdare.com/haven-json/1.1.0/)
 
 # Haven
 Haven is a  simple JSON library written in pure Kotlin with no external dependencies.
@@ -9,7 +9,7 @@ It was designed with simplicity of use in mind, with the goal of letting the use
 JSON with an almost Javascript-like syntax.
 
 **Quick Links:**
-- [API Documentation](http://docs.tripl3dogdare.com/haven-json/1.0.0/)
+- [API Documentation](http://docs.tripl3dogdare.com/haven-json/1.1.0/)
 - [Installation](#installation)
 - [Examples](#examples)
 
@@ -44,13 +44,12 @@ namely in type-safety and a hard hit to syntax conciseness. Haven aims to minimi
 issues as much as possible, giving you a simple, concise, easy to understand way to interface
 with your data, while still being type-safe (and without all the type-safety syntax clutter).
 
-Haven may eventually support a data-binding style of JSON manipulation, but for now, it's at
-the bottom of the priority list. Haven's philosophy revolves around simplicity and flexibility,
-and data-binding is by necessity rather complex, verbose, and tedious - it has it's uses,
-certainly, but when it comes to this project I find it more important to focus on making Haven 
-as awesome as possible within it's existing philosophy. That said, if anyone would like to create 
-data-binding capabilities for Haven as an addon library, feel free to let me know and I'll be 
-sure to link you here.
+Haven also supports a data-binding style of JSON manipulation, similar to most existing JVM
+libraries; however, this functionality is built on top of the core tree-model system and is
+really somewhat of a second class citizen. It's recommended to use the tree-model style for
+simple interactions with your data, and apply the data binding approach primarily when your
+code needs to interface with other outside code (for example, returning an object instead
+of raw JSON from an API call convenience method).
 
 ## Installation
 You can install Haven with [JitPack](https://jitpack.io/#tripl3dogdare/haven-json) (Gradle example 
@@ -66,7 +65,7 @@ allprojects {
 }
 
 dependencies {
-  implementation 'com.github.tripl3dogdare:haven-json:1.0.0'
+  implementation 'com.github.tripl3dogdare:haven-json:1.1.0'
 }
 ```
 
@@ -80,8 +79,7 @@ dependencies {
   - [x] Minified
   - [x] Pretty-printed at any indentation size
 - [x] [JSON.org](https://json.org) spec compliant JSON parser
-- [ ] Manual data class destructuring conventions
-- [ ] Automatic data class destructuring
+- [x] Data-binding style destructuring
 
 ## Examples
 
@@ -137,7 +135,52 @@ val jwick:Json = Json.parse(string)
 
 **Converting JSON back to a string**
 ```kotlin
-val jwickString2 = jwick.mkString()) // Default is 2-space indentation
+val jwickString2 = jwick.mkString())  // Default is 2-space indentation
 val jwickString0 = jwick.mkString(0)) // Minified
 val jwickString4 = jwick.mkString(4)) // Custom indentation depth in spaces
+```
+
+**Deserializing a class instance from JSON**
+```kotlin
+class Field(name:String, value:String) : JsonSchema
+
+// The first parameter can either be a constructor function (::Name) or a class instance (Name::class)
+//   The passed function or given class's primary constructor must return a subtype of JsonSchema!
+// The second parameter can either be a string (will be parsed as JSON) or an existing Json instance
+val field = Json.deserialize(::Field, """{"name":"Test","value":"test"}""")
+```
+
+**Deserializing with a name converter function**
+```kotlin
+class Thing(thingName:String) : JsonSchema
+
+// The optional third parameter can be any (String) -> String function
+// JsonSchema provides some common defaults like snake case to camel case (shown here)
+val field = Json.deserialize(::Thing, """{"thing_name":"Bob"}""", JsonSchema.SNAKE_TO_CAMEL)
+```
+
+**Deserializing with overridden property names**
+```kotlin
+class Thing( @JsonProperty("thing_name") thingName:String ) : JsonSchema
+
+// This will do the same as the above; useful for when a particular field doesn't follow conventions
+//   or you'd like to explicitly rename something
+val field = Json.deserialize(::Thing, """{"thing_name":"Bob"}""")
+```
+
+**Custom deserializer functions**
+```kotlin
+class WithDate(date:ZonedDateTime) : JsonSchema
+
+// Register a deserializer function with the default group
+// The input and output types of the given function are used to determine what to use
+// Only one deserializer function is allowed per output type
+Deserializers.register(ZonedDateTime::parse) // (String) -> ZonedDateTime
+val withDate = Json.deserialize(::WithDate, """{"date":"2018-07-05T18:13:59+00:00"}""")
+
+// Custom deserializer group
+// Useful for having different ways to deserialize a particular output type or not leaking deserializers
+//   to other functions
+val deser = Deserializers().add(ZonedDateTime::parse)
+val withDate = Json.deserialize(::WithDate, """{"date":"2018-07-05T18:13:59+00:00"}""", deserializers = deser)
 ```
