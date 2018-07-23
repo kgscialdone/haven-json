@@ -10,6 +10,15 @@
 <tbody>
 <tr>
 <td>
+<a href="../com.tripl3dogdare.havenjson/-deserializers/index.html">com.tripl3dogdare.havenjson.Deserializers</a></td>
+<td>
+<p>Represents a group of custom deserializer functions.
+For most things, you should use <a href="../com.tripl3dogdare.havenjson/-deserializers/default-instance.html">Deserializers.defaultInstance</a>. If for some
+reason you need to have multiple groups of deserializers, this class is available.</p>
+</td>
+</tr>
+<tr>
+<td>
 <a href="../com.tripl3dogdare.havenjson/-json.html">com.tripl3dogdare.havenjson.Json</a></td>
 <td>
 <p>Type alias for <a href="../com.tripl3dogdare.havenjson/-json-value/index.html">JsonValue</a>&lt;*&gt;</p>
@@ -62,6 +71,22 @@
 <a href="../com.tripl3dogdare.havenjson/-json-parser/index.html">com.tripl3dogdare.havenjson.JsonParser</a></td>
 <td>
 <p>Provides methods for parsing JSON from a string.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="../com.tripl3dogdare.havenjson/-json-property/index.html">com.tripl3dogdare.havenjson.JsonProperty</a></td>
+<td>
+<p>Marks a constructor parameter to be deserialized from a specific property name.
+Overrides the nameConverter parameter of <a href="../com.tripl3dogdare.havenjson/deserialize.html">deserialize</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="../com.tripl3dogdare.havenjson/-json-schema/index.html">com.tripl3dogdare.havenjson.JsonSchema</a></td>
+<td>
+<p>Base class for deserializable objects.
+Inheriting from this marks a class as a valid target for <a href="../com.tripl3dogdare.havenjson/deserialize.html">JsonValue.Companion.deserialize</a>.</p>
 </td>
 </tr>
 <tr>
