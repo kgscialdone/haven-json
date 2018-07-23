@@ -9,10 +9,11 @@ buildscript {
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.2.50'
     id 'org.jetbrains.dokka' version '0.9.17'
+    id 'maven'
 }
 
 group 'com.tripl3dogdare'
-version '1.0-SNAPSHOT'
+version '1.1.0'
 
 repositories {
     maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
@@ -21,6 +22,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile 'org.jetbrains.kotlin:kotlin-reflect:1.2.51'
     testCompile 'io.kotlintest:kotlintest-runner-junit5:3.1.7'
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.2.0"
     testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
