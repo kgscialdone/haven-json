@@ -51,9 +51,12 @@ object JsonParser {
     ':' -> lex(from.tail, tokens + Token.Colon)
 
     '"' -> {
-      var last = '\u0000'
-      val tail = from.tail.takeWhile { val t = last == '\\' || it != '"'; last = it; t }
-      lex(from.drop(tail.length + 2), tokens + Token.String(tail))
+      val str = run loop@{ from.tail.fold("") { acc, c ->
+        if(c == '"' && !acc.endsWith('\\')) return@loop acc
+        acc + c
+      }}
+
+      lex(from.drop(str.length + 2), tokens + Token.String(str))
     }
 
     in Regex("\\d"), '-' -> {
