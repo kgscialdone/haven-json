@@ -20,8 +20,6 @@ object JsonParser {
     class Int(text: kotlin.String) : Token(text)
     class Float(text: kotlin.String) : Token(text)
     class String(text: kotlin.String) : Token(text)
-
-    object Noop : Token("")
   }
 
   /** Thrown by [parse] when a parsing error occurs. */
@@ -35,13 +33,13 @@ object JsonParser {
    */
   fun parse(from: String): Json {
     val (parsed, tail) = parse(lex(from))
-    if (tail.any { it != Token.Noop })
+    if(tail.isNotEmpty())
       throw JsonParseError("Input string contains unexpected tokens before EOF")
     return parsed
   }
 
   private tailrec fun lex(from: String, tokens: List<Token> = emptyList()): List<Token> = when (from.head) {
-    null -> tokens + Token.Noop
+    null -> tokens
     in Regex("\\s") -> lex(from.trim(), tokens)
     '{' -> lex(from.tail, tokens + Token.ObjectBegin)
     '}' -> lex(from.tail, tokens + Token.ObjectEnd)
@@ -119,7 +117,6 @@ object JsonParser {
     Token.True -> JsonBoolean(true) to tokens.tail
     Token.False -> JsonBoolean(false) to tokens.tail
     Token.Null -> JsonNull to tokens.tail
-    Token.Noop -> parse(tokens.tail)
 
     is Token.Int -> JsonInt(tokens.head!!.text.toInt()) to tokens.tail
     is Token.Float -> JsonFloat(tokens.head!!.text.toFloat()) to tokens.tail
