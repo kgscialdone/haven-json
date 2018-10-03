@@ -2,17 +2,56 @@ package com.tripl3dogdare.havenjson
 
 import io.kotlintest.matchers.maps.shouldContainKey
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import io.kotlintest.specs.WordSpec
 import java.io.File
 
 class ParserTest : WordSpec() {
   init {
     "JsonValue#parse" should {
-      for(file in File("./test_files/").walkTopDown().filter { it.isFile })
+      for(file in File("./src/test/test_files/").walkTopDown().filter { it.isFile })
         "correctly parse ${file.name}" {
           results.shouldContainKey(file.name)
           Json.parse(file.readText()) shouldBe results[file.name]
         }
+
+      "throw on invalid numbers" {
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""{ "number": 42-73 }""") }
+          .also { it.message shouldBe "Unexpected - while parsing number" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""{ "number": 42.7.3 }""") }
+          .also { it.message shouldBe "Unexpected . while parsing number" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""{ "number": 42e7e3 }""") }
+          .also { it.message shouldBe "Unexpected e while parsing number" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""{ "number": 42E7E3 }""") }
+          .also { it.message shouldBe "Unexpected E while parsing number" }
+      }
+
+      "throw on invalid objects" {
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""{ "test": "Hello, world!" """) }
+          .also { it.message shouldBe "Unexpected EOF when parsing object" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""{ "test", "Hello, world!" }""") }
+          .also { it.message shouldBe "Objects must follow the structure {\"key1\":value1,\"key2\":value2}" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""{ "test": "Hello, world!": "test2": "Hello, world!" }""") }
+          .also { it.message shouldBe "Objects must follow the structure {\"key1\":value1,\"key2\":value2}" }
+      }
+
+      "throw on invalid arrays" {
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""[ "test", "test" """) }
+          .also { it.message shouldBe "Unexpected EOF when parsing array" }
+      }
+
+      "throw on unexpected tokens" {
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""]""") }
+          .also { it.message shouldBe "Unexpected ] when parsing JSON" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""}""") }
+          .also { it.message shouldBe "Unexpected } when parsing JSON" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse(""",""") }
+          .also { it.message shouldBe "Unexpected , when parsing JSON" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse(""":""") }
+          .also { it.message shouldBe "Unexpected : when parsing JSON" }
+        shouldThrow<JsonParser.JsonParseError> { Json.parse("""[] 73""") }
+          .also { it.message shouldBe "Input string contains unexpected tokens before EOF" }
+      }
     }
   }
 

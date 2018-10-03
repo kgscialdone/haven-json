@@ -21,7 +21,7 @@ object JsonParser {
     class Float(text: kotlin.String) : Token(text)
     class String(text: kotlin.String) : Token(text)
 
-    object Noop : Token("")
+    override fun toString() = text
   }
 
   /** Thrown by [parse] when a parsing error occurs. */
@@ -35,13 +35,13 @@ object JsonParser {
    */
   fun parse(from: String): Json {
     val (parsed, tail) = parse(lex(from))
-    if (tail.any { it != Token.Noop })
+    if(tail.isNotEmpty())
       throw JsonParseError("Input string contains unexpected tokens before EOF")
     return parsed
   }
 
   private tailrec fun lex(from: String, tokens: List<Token> = emptyList()): List<Token> = when (from.head) {
-    null -> tokens + Token.Noop
+    null -> tokens
     in Regex("\\s") -> lex(from.trim(), tokens)
     '{' -> lex(from.tail, tokens + Token.ObjectBegin)
     '}' -> lex(from.tail, tokens + Token.ObjectEnd)
@@ -51,28 +51,25 @@ object JsonParser {
     ':' -> lex(from.tail, tokens + Token.Colon)
 
     '"' -> {
-      var last = '\u0000'
-      val tail = from.tail.takeWhile { val t = last == '\\' || it != '"'; last = it; t }
-      lex(from.drop(tail.length + 2), tokens + Token.String(tail))
+      val str = run loop@{ from.tail.fold("") { acc, c ->
+        if(c == '"' && !acc.endsWith('\\')) return@loop acc
+        acc + c
+      }}
+
+      lex(from.drop(str.length + 2), tokens + Token.String(str))
     }
 
     in Regex("\\d"), '-' -> {
-      var acc = ""
-      val tail = from.dropWhile {
-        when {
-          (it == '-' && acc != "") ||
-            (it == '.' && acc.contains('.')) ||
-            ((it == 'e' || it == 'E') && acc.contains('e', true)) ->
-            throw JsonParseError("Unexpected $it while parsing number")
-          it in Regex("[-.eE\\d]") -> {
-            acc += it; true
-          }
-          else -> false
-        }
-      }
+      val num = run loop@{ from.tail.fold(from.head.toString()) { acc, c ->
+        if(c == '-' || c in Regex("[.eE]") && acc.contains(c, true))
+          throw JsonParseError("Unexpected $c while parsing number")
+        if(c !in Regex("[.eE\\d]"))
+          return@loop acc
+        acc + c
+      }}
 
-      if (acc.contains(Regex("[.eE]"))) lex(tail, tokens + Token.Float(acc))
-      else lex(tail, tokens + Token.Int(acc))
+      if(num.contains(Regex("[.eE]"))) lex(from.drop(num.length), tokens + Token.Float(num))
+      else lex(from.drop(num.length), tokens + Token.Int(num))
     }
 
     else -> when {
@@ -83,7 +80,7 @@ object JsonParser {
     }
   }
 
-  private tailrec fun parse(tokens: List<Token>): Pair<Json, List<Token>> = when (tokens.head) {
+  private fun parse(tokens: List<Token>): Pair<Json, List<Token>> = when (tokens.head) {
     Token.ObjectBegin -> {
       var tail = tokens.tail
       var pairs: List<Pair<String, Json>> = emptyList()
@@ -122,7 +119,6 @@ object JsonParser {
     Token.True -> JsonBoolean(true) to tokens.tail
     Token.False -> JsonBoolean(false) to tokens.tail
     Token.Null -> JsonNull to tokens.tail
-    Token.Noop -> parse(tokens.tail)
 
     is Token.Int -> JsonInt(tokens.head!!.text.toInt()) to tokens.tail
     is Token.Float -> JsonFloat(tokens.head!!.text.toFloat()) to tokens.tail
