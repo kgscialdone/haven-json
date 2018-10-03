@@ -60,22 +60,16 @@ object JsonParser {
     }
 
     in Regex("\\d"), '-' -> {
-      var acc = ""
-      val tail = from.dropWhile {
-        when {
-          (it == '-' && acc != "") ||
-            (it == '.' && acc.contains('.')) ||
-            ((it == 'e' || it == 'E') && acc.contains('e', true)) ->
-            throw JsonParseError("Unexpected $it while parsing number")
-          it in Regex("[-.eE\\d]") -> {
-            acc += it; true
-          }
-          else -> false
-        }
-      }
+      val num = run loop@{ from.tail.fold(from.head.toString()) { acc, c ->
+        if(c in Regex("[.eE]") && acc.contains(c, true))
+          throw JsonParseError("Unexpected $c while parsing number")
+        if(c !in Regex("[.eE\\d]"))
+          return@loop acc
+        acc + c
+      }}
 
-      if (acc.contains(Regex("[.eE]"))) lex(tail, tokens + Token.Float(acc))
-      else lex(tail, tokens + Token.Int(acc))
+      if(num.contains(Regex("[.eE]"))) lex(from.drop(num.length), tokens + Token.Float(num))
+      else lex(from.drop(num.length), tokens + Token.Int(num))
     }
 
     else -> when {
