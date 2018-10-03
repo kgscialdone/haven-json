@@ -20,6 +20,8 @@ object JsonParser {
     class Int(text: kotlin.String) : Token(text)
     class Float(text: kotlin.String) : Token(text)
     class String(text: kotlin.String) : Token(text)
+
+    override fun toString() = text
   }
 
   /** Thrown by [parse] when a parsing error occurs. */
