@@ -59,7 +59,7 @@ object JsonParser {
 
     in Regex("\\d"), '-' -> {
       val num = run loop@{ from.tail.fold(from.head.toString()) { acc, c ->
-        if(c in Regex("[.eE]") && acc.contains(c, true))
+        if(c == '-' || c in Regex("[.eE]") && acc.contains(c, true))
           throw JsonParseError("Unexpected $c while parsing number")
         if(c !in Regex("[.eE\\d]"))
           return@loop acc
