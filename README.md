@@ -1,10 +1,11 @@
+[![](https://jitpack.io/v/tripl3dogdare/haven-json.svg)](https://jitpack.io/#tripl3dogdare/haven-json)
 [![Build Status](https://www.travis-ci.com/tripl3dogdare/haven-json.svg?branch=master)](https://www.travis-ci.com/tripl3dogdare/haven-json)
 [![Issue Count](https://img.shields.io/github/issues/tripl3dogdare/haven-json.svg)](https://github.com/tripl3dogdare/haven-json/issues)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 [![Documentation: Read Now](https://img.shields.io/badge/documentation-read%20now-blue.svg)](http://docs.tripl3dogdare.com/haven-json/1.1.0/)
 
 # Haven
-Haven is a  simple JSON library written in pure Kotlin with no external dependencies.
+Haven is a simple JSON library written in pure Kotlin with no third-party dependencies.
 It was designed with simplicity of use in mind, with the goal of letting the user manipulate
 JSON with an almost Javascript-like syntax.
 
@@ -27,7 +28,7 @@ In order to achieve this, Haven:
   their data at every step
 - Provides a DSL syntax as Javascript-like as possible within the
   restraints of the Kotlin language
-- Uses no external dependencies other than the 
+- Uses no third-party dependencies other than the
   [kotlintest](https://github.com/kotlintest/kotlintest) testing framework
 - Provides extensive test cases to ensure there are as few bugs and
   inconsistencies as possible
