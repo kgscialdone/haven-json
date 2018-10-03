@@ -78,7 +78,7 @@ object JsonParser {
     }
   }
 
-  private tailrec fun parse(tokens: List<Token>): Pair<Json, List<Token>> = when (tokens.head) {
+  private fun parse(tokens: List<Token>): Pair<Json, List<Token>> = when (tokens.head) {
     Token.ObjectBegin -> {
       var tail = tokens.tail
       var pairs: List<Pair<String, Json>> = emptyList()
