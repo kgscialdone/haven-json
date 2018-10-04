@@ -9,6 +9,19 @@ import kotlin.reflect.jvm.*
  * Inheriting from this marks a class as a valid target for [JsonValue.Companion.deserialize].
  */
 interface JsonSchema {
+  @Suppress("unchecked_cast")
+  fun toJson(nameConverter: NameConverter = AS_WRITTEN):JsonObject {
+    val constructor = this::class.primaryConstructor
+      ?: throw NullPointerException("Cannot serialize constructorless class to JSON.")
+
+    val out = constructor.parameters.map { param ->
+      val prop = this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>
+      nameConverter(param.name!!) to Json(prop.get(this))
+    }
+
+    return JsonObject(out.toMap())
+  }
+
   companion object {
     /** Name converter function that leaves names as-is. */
     val AS_WRITTEN: NameConverter = { it }
