@@ -1,13 +1,13 @@
 buildscript {
-    repositories { mavenCentral(); jcenter(); }
+    repositories { mavenCentral(); jcenter() }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.50"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.71"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.17"
     }
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.2.50'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.71'
     id 'org.jetbrains.dokka' version '0.9.17'
     id 'maven'
 }
@@ -15,17 +15,13 @@ plugins {
 group 'com.tripl3dogdare'
 version '1.1.0'
 
-repositories {
-    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
-    mavenCentral()
-}
-
+repositories { mavenCentral() }
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile 'org.jetbrains.kotlin:kotlin-reflect:1.2.51'
+    compile 'org.jetbrains.kotlin:kotlin-reflect:1.2.71'
     testCompile 'io.kotlintest:kotlintest-runner-junit5:3.1.7'
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.2.0"
-    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
+    testCompile "org.slf4j:slf4j-simple:1.6.1"
 }
 
 compileKotlin { kotlinOptions.jvmTarget = "1.8" }
