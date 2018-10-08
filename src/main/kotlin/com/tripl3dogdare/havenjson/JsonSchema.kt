@@ -15,8 +15,11 @@ interface JsonSchema {
       ?: throw NullPointerException("Cannot serialize constructorless class to JSON.")
 
     val out = constructor.parameters.map { param ->
-      val prop = this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>
-      (param.findAnnotation<JsonProperty>()?.name ?: nameConverter(param.name!!)) to Json(prop.get(this))
+      val prop = (this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>).get(this)
+      (param.findAnnotation<JsonProperty>()?.name ?: nameConverter(param.name!!)) to when {
+        prop is JsonSchema -> prop.toJson(nameConverter)
+        else -> Json(prop)
+      }
     }
 
     return JsonObject(out.toMap())
