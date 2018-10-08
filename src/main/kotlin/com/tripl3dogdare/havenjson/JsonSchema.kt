@@ -8,22 +8,7 @@ import kotlin.reflect.jvm.*
  * Base class for deserializable objects.
  * Inheriting from this marks a class as a valid target for [JsonValue.Companion.deserialize].
  */
-interface JsonSchema {
-  companion object {
-    /** Name converter function that leaves names as-is. */
-    val AS_WRITTEN: NameConverter = { it }
-    /** Name converter function that converts names to uppercase. */
-    val UPPERCASE: NameConverter = String::toUpperCase
-    /** Name converter function that converts names to lowercase. */
-    val LOWERCASE: NameConverter = String::toLowerCase
-    /** Name converter function that converts names from camelCase to snake_case. */
-    val CAMEL_TO_SNAKE: NameConverter =
-      { it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }
-    /** Name converter function that converts names from snake_case to camelCase. */
-    val SNAKE_TO_CAMEL: NameConverter =
-      { it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }
-  }
-}
+interface JsonSchema
 
 /**
  * Represents a group of custom deserializer functions.
@@ -86,28 +71,25 @@ open class Deserializers {
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:String,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ) =
-  deserialize(clazz, Json.parse(raw), nameConverter, deserializers)
+  deserialize(clazz, Json.parse(raw), deserializers)
 
 /** Deserialize a [JsonValue] via the primary constructor of the given class. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:Json,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ) =
-  deserialize(clazz.primaryConstructor!!, raw, nameConverter, deserializers)
+  deserialize(clazz.primaryConstructor!!, raw, deserializers)
 
 /** Deserialize a JSON string via the given constructor. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:String,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ) =
-  deserialize(constructor, Json.parse(raw), nameConverter, deserializers)
+  deserialize(constructor, Json.parse(raw), deserializers)
 
 /**
  * Deserialize a [JsonValue] via the given constructor.
@@ -128,16 +110,17 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:Json,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ):T {
   if(raw !is JsonObject)
     throw ClassCastException("Cannot deserialize JsonSchema from non-object JSON value")
+  val clazz = constructor.returnType.jvmErasure as KClass<JsonSchema>
   val params = raw.asMap!!.keys.map { name ->
     val json = raw[name]
     val it = constructor.parameters.find {
       it.isAnnotated<JsonProperty> { name == it.name } ||
-      !it.isAnnotated<JsonProperty>() && it.name == nameConverter(name)
+      !it.isAnnotated<JsonProperty>() &&
+      it.name == NamePolicy.getDeclaredNamePolicy(clazz)(name, clazz)
     } ?: throw NoSuchFieldException("Cannot deserialize JSON parameter $name, no matching constructor parameter found")
 
     Pair(it, when {
@@ -159,7 +142,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
       it.type.isSupertypeOf(jsonObject) && json is JsonObject -> json
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
-        deserialize(it.type.jvmErasure as KClass<JsonSchema>, json, nameConverter, deserializers)
+        deserialize(it.type.jvmErasure as KClass<JsonSchema>, json, deserializers)
       deserializers.has(it.type.jvmErasure) ->
         try { deserializers.deserialize(it.type.jvmErasure, json) }
         catch(e:Exception) {
@@ -187,7 +170,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
           innerType.isSubtypeOf(jdeserType) -> deserializeList(json, innerTypeRaw) { i, j ->
             if(!j::class.createType().isSubtypeOf(jsonObject))
               throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to $innerType")
-            deserialize(innerType.jvmErasure as KClass<JsonSchema>, j, nameConverter, deserializers)
+            deserialize(innerType.jvmErasure as KClass<JsonSchema>, j, deserializers)
           }
 
           deserializers.has(innerType.jvmErasure) -> deserializeList(json, innerTypeRaw) { i, j ->
@@ -231,10 +214,41 @@ private inline fun <T> deserializeList(json:JsonArray, listTypeRaw:KType, f:(Int
 @MustBeDocumented
 annotation class JsonProperty(val name:String)
 
+@Target(AnnotationTarget.CLASS)
+@MustBeDocumented
+annotation class JsonNamePolicy(val nc:NamePolicy)
+
+interface CustomJsonNamePolicy {
+  fun convertFieldName(name:String):String
+}
+
+enum class NamePolicy(private val f:((String) -> String)?) {
+  AsWritten({it}),
+  Uppercase(String::toUpperCase),
+  Lowercase(String::toLowerCase),
+  CamelToSnake({ it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }),
+  SnakeToCamel({ it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }),
+  Custom(null);
+
+  operator fun invoke(name:String, clazz:KClass<JsonSchema>? = null):String = when(this) {
+    Custom -> {
+      if(clazz?.companionObject?.isSubclassOf(CustomJsonNamePolicy::class) == true)
+        (clazz.companionObjectInstance as CustomJsonNamePolicy).convertFieldName(name)
+      else
+        throw ClassNotFoundException("JsonSchema with Custom name policy does not define a companion object inheriting from CustomJsonNamePolicy")
+    }
+
+    else -> f!!(name)
+  }
+
+  companion object {
+    fun getDeclaredNamePolicy(clazz: KClass<JsonSchema>) =
+      clazz.findAnnotation<JsonNamePolicy>()?.nc ?: AsWritten
+  }
+}
+
 private inline fun <reified A: Annotation> KParameter.isAnnotated(pred:(A) -> Boolean = {true}) =
   this.annotations.any { it.annotationClass == A::class && pred(it as A) }
-
-private typealias NameConverter = (String) -> String
 
 private val intType = Int::class.createType()
 private val floatType = Float::class.createType()
