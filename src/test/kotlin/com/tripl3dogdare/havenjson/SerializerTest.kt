@@ -1,6 +1,7 @@
 package com.tripl3dogdare.havenjson
 
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import io.kotlintest.specs.WordSpec
 
 class SerializerTest : WordSpec({
@@ -49,6 +50,11 @@ class SerializerTest : WordSpec({
              "obj" to mapOf("greeting" to "Hello",
                             "target" to "world"))
     }
+
+    "throw when called on a constructorless class" {
+      shouldThrow<NullPointerException> { Constructorless.toJson() }.also {
+        it.message shouldBe "Cannot convert constructorless type Constructorless to JSON" }
+    }
   }
 }) {
   data class BasicTypes(
@@ -79,5 +85,6 @@ class SerializerTest : WordSpec({
     val obj:JsonObject
   ) : JsonSchema
 
+  object Constructorless : JsonSchema
   class Schema(val test:String) : JsonSchema
 }

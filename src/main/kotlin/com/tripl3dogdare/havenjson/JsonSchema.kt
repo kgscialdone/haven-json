@@ -12,7 +12,7 @@ interface JsonSchema {
   @Suppress("unchecked_cast")
   fun toJson(nameConverter: NameConverter = AS_WRITTEN):JsonObject {
     val constructor = this::class.primaryConstructor
-      ?: throw NullPointerException("Cannot serialize constructorless class to JSON.")
+      ?: throw NullPointerException("Cannot convert constructorless type ${this::class.simpleName} to JSON")
 
     val out = constructor.parameters.map { param ->
       val prop = (this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>).get(this)
