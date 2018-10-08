@@ -55,6 +55,11 @@ class SerializerTest : WordSpec({
       shouldThrow<NullPointerException> { Constructorless.toJson() }.also {
         it.message shouldBe "Cannot convert constructorless type Constructorless to JSON" }
     }
+
+    "throw when called with an unserializable parameter type" {
+      shouldThrow<ClassCastException> { Unserializable(NonSchema()).toJson() }.also {
+        it.message shouldBe "Cannot convert NonSchema to JSON" }
+    }
   }
 }) {
   data class BasicTypes(
@@ -87,4 +92,6 @@ class SerializerTest : WordSpec({
 
   object Constructorless : JsonSchema
   class Schema(val test:String) : JsonSchema
+  class NonSchema
+  data class Unserializable(val test:NonSchema) : JsonSchema
 }

@@ -18,6 +18,12 @@ interface JsonSchema {
       val prop = (this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>).get(this)
       (param.findAnnotation<JsonProperty>()?.name ?: nameConverter(param.name!!)) to when {
         prop is JsonSchema -> prop.toJson(nameConverter)
+
+        Json(prop) is JsonString && prop !is String && prop !is JsonString -> {
+          val className = if(prop != null) prop::class.simpleName else "null"
+          throw ClassCastException("Cannot convert $className to JSON")
+        }
+
         else -> Json(prop)
       }
     }
