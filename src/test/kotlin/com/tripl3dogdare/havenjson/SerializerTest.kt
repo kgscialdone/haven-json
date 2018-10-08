@@ -6,7 +6,7 @@ import io.kotlintest.specs.WordSpec
 class SerializerTest : WordSpec({
   "JsonSchema#toJson" should {
     "properly serialize basic types" {
-      BasicTypes(100, 100f, "test", false, null).toJson() shouldBe
+      BasicTypes(100, 100f, "test", false, null, "test").toJson() shouldBe
         Json("int" to 100, "float" to 100f, "string" to "test", "bool" to false, "nil" to null)
     }
 
@@ -50,7 +50,8 @@ class SerializerTest : WordSpec({
     val float:Float,
     val string:String,
     val bool:Boolean,
-    val nil:Nothing?
+    val nil:Nothing?,
+    @JsonProperty("annotated_name") val annotatedName:String
   ) : JsonSchema
 
   data class Lists(

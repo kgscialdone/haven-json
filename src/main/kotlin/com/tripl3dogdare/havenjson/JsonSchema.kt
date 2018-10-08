@@ -16,7 +16,7 @@ interface JsonSchema {
 
     val out = constructor.parameters.map { param ->
       val prop = this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>
-      nameConverter(param.name!!) to Json(prop.get(this))
+      (param.findAnnotation<JsonProperty>()?.name ?: nameConverter(param.name!!)) to Json(prop.get(this))
     }
 
     return JsonObject(out.toMap())
