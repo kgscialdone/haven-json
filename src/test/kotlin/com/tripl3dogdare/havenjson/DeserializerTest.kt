@@ -149,10 +149,12 @@ class DeserializerTest : WordSpec({
       }""")
 
       val customPolicy = Json.deserialize(::CustomNamePolicy, """{ "LOWERCASE": true }""")
+      val chainedPolicy = Json.deserialize(::ChainedNamePolicy, """{ "upperSnake": true }""")
 
       camelCase shouldBe NamesCamel(true, listOf("camelCase", "propertyNames"))
       snakeCase shouldBe NamesSnake(false, listOf("camel_case", "property_names"))
       customPolicy shouldBe CustomNamePolicy(true)
+      chainedPolicy shouldBe ChainedNamePolicy(true)
     }
 
     "use the JsonProperty annotation to resolve names" {
@@ -335,6 +337,11 @@ class DeserializerTest : WordSpec({
       override fun convertFieldName(name:String) = name.toLowerCase()
     }
   }
+
+  @JsonNamePolicy(NamePolicy.CamelToSnake, NamePolicy.Uppercase)
+  data class ChainedNamePolicy(
+    val UPPER_SNAKE:Boolean
+  ) : JsonSchema
 
   @JsonNamePolicy(NamePolicy.Custom)
   data class CustomNamePolicyUndef(

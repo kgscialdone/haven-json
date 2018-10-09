@@ -120,7 +120,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
     val it = constructor.parameters.find {
       it.isAnnotated<JsonProperty> { name == it.name } ||
       !it.isAnnotated<JsonProperty>() &&
-      it.name == NamePolicy.getDeclaredNamePolicy(clazz)(name, clazz)
+      it.name == NamePolicy.getNameConverter(clazz)(name)
     } ?: throw NoSuchFieldException("Cannot deserialize JSON parameter $name, no matching constructor parameter found")
 
     Pair(it, when {
@@ -216,7 +216,7 @@ annotation class JsonProperty(val name:String)
 
 @Target(AnnotationTarget.CLASS)
 @MustBeDocumented
-annotation class JsonNamePolicy(val nc:NamePolicy)
+annotation class JsonNamePolicy(vararg val nc:NamePolicy)
 
 interface CustomJsonNamePolicy {
   fun convertFieldName(name:String):String
@@ -242,8 +242,10 @@ enum class NamePolicy(private val f:((String) -> String)?) {
   }
 
   companion object {
-    fun getDeclaredNamePolicy(clazz: KClass<JsonSchema>) =
-      clazz.findAnnotation<JsonNamePolicy>()?.nc ?: AsWritten
+    fun getNameConverter(clazz: KClass<JsonSchema>) =
+      getDeclaredNamePolicies(clazz).fold({n:String->n}) { a, b -> { name -> b(a(name), clazz) }}
+    fun getDeclaredNamePolicies(clazz:KClass<JsonSchema>) =
+      clazz.findAnnotation<JsonNamePolicy>()?.nc?.toList() ?: listOf(AsWritten)
   }
 }
 
