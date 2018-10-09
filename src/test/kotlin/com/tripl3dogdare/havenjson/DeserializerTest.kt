@@ -333,7 +333,7 @@ class DeserializerTest : WordSpec({
   data class CustomNamePolicy(
     val lowercase:Boolean
   ) : JsonSchema {
-    companion object : CustomJsonNamePolicy {
+    companion object : com.tripl3dogdare.havenjson.CustomNamePolicy {
       override fun convertFieldName(name:String) = name.toLowerCase()
     }
   }

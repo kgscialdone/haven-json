@@ -218,7 +218,7 @@ annotation class JsonProperty(val name:String)
 @MustBeDocumented
 annotation class JsonNamePolicy(vararg val nc:NamePolicy)
 
-interface CustomJsonNamePolicy {
+interface CustomNamePolicy {
   fun convertFieldName(name:String):String
 }
 
