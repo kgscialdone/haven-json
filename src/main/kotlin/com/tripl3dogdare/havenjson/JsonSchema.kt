@@ -251,8 +251,16 @@ enum class NamePolicy(private val f:((String) -> String)?) {
   Lowercase(String::toLowerCase),
   /** Converts the field name from camel case to snake case. */
   CamelToSnake({ it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }),
-  /** Converts the field name snake case to camel case. */
+  /** Converts the field name from camel case to skewer case. */
+  CamelToSkewer({ it.replace(Regex("([A-Z])"), "-$1").toLowerCase() }),
+  /** Converts the field name from snake case to camel case. */
   SnakeToCamel({ it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }),
+  /** Converts the field name from snake case to skewer case. */
+  SnakeToSkewer({ it.replace("_", "-") }),
+  /** Converts the field name from skewer case to camel case. */
+  SkewerToCamel({ it.toLowerCase().replace(Regex("-(\\w)")) { it.groups[1]!!.value.toUpperCase() } }),
+  /** Converts the field name from skewer case to snake case. */
+  SkewerToSnake({ it.replace("-", "_") }),
 
   /**
    * Allows for definition of a custom name conversion method.
