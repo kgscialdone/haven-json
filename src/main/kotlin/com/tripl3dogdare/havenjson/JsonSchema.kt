@@ -114,13 +114,12 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 ):T {
   if(raw !is JsonObject)
     throw ClassCastException("Cannot deserialize JsonSchema from non-object JSON value")
-  val clazz = constructor.returnType.jvmErasure as KClass<JsonSchema>
   val params = raw.asMap!!.keys.map { name ->
     val json = raw[name]
     val it = constructor.parameters.find {
       it.isAnnotated<JsonProperty> { name == it.name } ||
       !it.isAnnotated<JsonProperty>() &&
-      it.name == NamePolicy.getNameConverter(clazz)(name)
+      it.name == NamePolicy.getNameConverter(constructor.returnType.jvmErasure as KClass<JsonSchema>)(name)
     } ?: throw NoSuchFieldException("Cannot deserialize JSON parameter $name, no matching constructor parameter found")
 
     Pair(it, when {
@@ -230,14 +229,10 @@ enum class NamePolicy(private val f:((String) -> String)?) {
   SnakeToCamel({ it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }),
   Custom(null);
 
-  operator fun invoke(name:String, clazz:KClass<JsonSchema>? = null):String = when(this) {
-    Custom -> {
-      if(clazz?.companionObject?.isSubclassOf(CustomJsonNamePolicy::class) == true)
-        (clazz.companionObjectInstance as CustomJsonNamePolicy).convertFieldName(name)
-      else
-        throw ClassNotFoundException("JsonSchema with Custom name policy does not define a companion object inheriting from CustomJsonNamePolicy")
-    }
-
+  operator fun invoke(name:String, clazz:KClass<JsonSchema>):String = when(this) {
+    Custom ->
+      (clazz.companionObjectInstance as? CustomNamePolicy)?.convertFieldName(name)
+        ?: throw ClassNotFoundException("${clazz.simpleName} declares a custom name policy but does not define a companion object inheriting from CustomNamePolicy")
     else -> f!!(name)
   }
 

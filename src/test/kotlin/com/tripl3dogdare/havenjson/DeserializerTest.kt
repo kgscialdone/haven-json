@@ -241,7 +241,7 @@ class DeserializerTest : WordSpec({
       shouldThrow<ClassNotFoundException> {
         Json.deserialize(::CustomNamePolicyUndef, """{ "LOWERCASE": true }""")
       }.also {
-        it.message shouldBe "JsonSchema with Custom name policy does not define a companion object inheriting from CustomJsonNamePolicy"
+        it.message shouldBe "CustomNamePolicyUndef declares a custom name policy but does not define a companion object inheriting from CustomNamePolicy"
       }
     }
   }
