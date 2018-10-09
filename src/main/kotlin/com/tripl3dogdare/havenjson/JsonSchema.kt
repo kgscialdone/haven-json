@@ -206,29 +206,71 @@ private inline fun <T> deserializeList(json:JsonArray, listTypeRaw:KType, f:(Int
 
 /**
  * Marks a constructor parameter to be deserialized from a specific property name.
- * Overrides the nameConverter parameter of [deserialize].
+ * Overrides [JsonNamePolicy] if set.
  * @property name The name of the JSON property this parameter should take it's value from when deserialized.
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @MustBeDocumented
 annotation class JsonProperty(val name:String)
 
+/**
+ * Sets the desired [NamePolicy] for a given [JsonSchema] subclass.
+ * If this annotation is not present, [NamePolicy.AsWritten] will be assumed.
+ * If multiple [NamePolicy]s are passed, they will be applied from left to right.
+ * If [NamePolicy.Custom] is passed, the [JsonSchema] subclass must define a companion object
+ *  inheriting from [CustomNamePolicy].
+ *
+ * @property nc The [NamePolicy] (or multiple) to apply when deserializing.
+ */
 @Target(AnnotationTarget.CLASS)
 @MustBeDocumented
 annotation class JsonNamePolicy(vararg val nc:NamePolicy)
 
+/**
+ * Base interface for use with [NamePolicy.Custom].
+ * Must be implemented by a companion object on any [JsonSchema]s declaring a custom [NamePolicy].
+ */
 interface CustomNamePolicy {
+  /**
+   * Converts the name of a JSON field to it's corresponding constructor parameter name.
+   * @param name The field name in the JSON source.
+   * @return The name of the corresponding constructor parameter for this [JsonSchema].
+   */
   fun convertFieldName(name:String):String
 }
 
+/**
+ * Used with [JsonNamePolicy] to define the desired name conversion strategy for a given [JsonSchema].
+ */
 enum class NamePolicy(private val f:((String) -> String)?) {
+  /** Leaves the field name as-is (default). */
   AsWritten({it}),
+  /** Converts the field name to uppercase. */
   Uppercase(String::toUpperCase),
+  /** Converts the field name to lowercase. */
   Lowercase(String::toLowerCase),
+  /** Converts the field name from camel case to snake case. */
   CamelToSnake({ it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }),
+  /** Converts the field name snake case to camel case. */
   SnakeToCamel({ it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }),
+
+  /**
+   * Allows for definition of a custom name conversion method.
+   * When used, the host [JsonSchema] must define a companion object implementing [CustomNamePolicy].
+   */
   Custom(null);
 
+  /**
+   * Applies this [NamePolicy] for the given name.
+   * If this is [NamePolicy.Custom], the given class will be used to determine the method to use,
+   *  via a companion object implementing [CustomNamePolicy].
+   *
+   * @param name The name to convert.
+   * @param clazz The host [JsonSchema] class to pull custom policies from.
+   * @return The converted name.
+   * @throws ClassNotFoundException if called on [NamePolicy.Custom] with a [clazz] that does not define
+   *  a companion object implementing [CustomNamePolicy].
+   */
   operator fun invoke(name:String, clazz:KClass<JsonSchema>):String = when(this) {
     Custom ->
       (clazz.companionObjectInstance as? CustomNamePolicy)?.convertFieldName(name)
@@ -237,8 +279,19 @@ enum class NamePolicy(private val f:((String) -> String)?) {
   }
 
   companion object {
+    /**
+     * Builds a name converter function for the given class.
+     * @param clazz The [JsonSchema] subclass to get the name converter for.
+     * @return A (String) -> String combining all declared [NamePolicy]s for [clazz].
+     */
     fun getNameConverter(clazz: KClass<JsonSchema>) =
       getDeclaredNamePolicies(clazz).fold({n:String->n}) { a, b -> { name -> b(a(name), clazz) }}
+
+    /**
+     * Returns all declared [NamePolicy]s for the given class.
+     * @param clazz The [JsonSchema] subclass to get the [NamePolicy]s for.
+     * @return A List<NamePolicy> containing all declared [NamePolicy]s for [clazz].
+     */
     fun getDeclaredNamePolicies(clazz:KClass<JsonSchema>) =
       clazz.findAnnotation<JsonNamePolicy>()?.nc?.toList() ?: listOf(AsWritten)
   }
