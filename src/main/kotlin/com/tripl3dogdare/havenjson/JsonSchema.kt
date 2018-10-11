@@ -253,14 +253,26 @@ enum class NamePolicy(private val f:((String) -> String)?) {
   CamelToSnake({ it.decamelize('_') }),
   /** Converts the field name from camel case to kebab case. */
   CamelToKebab({ it.decamelize('-') }),
+  /** Converts the field name from camel case to Pascal case. */
+  CamelToPascal({ it.capitalize() }),
   /** Converts the field name from snake case to camel case. */
   SnakeToCamel({ it.camelize('_') }),
   /** Converts the field name from snake case to kebab case. */
   SnakeToKebab({ it.replace("_", "-") }),
+  /** Converts the field name from snake case to Pascal case. */
+  SnakeToPascal({ it.camelize('_').capitalize() }),
   /** Converts the field name from kebab case to camel case. */
   KebabToCamel({ it.camelize('-') }),
   /** Converts the field name from kebab case to snake case. */
   KebabToSnake({ it.replace("-", "_") }),
+  /** Converts the field name from kebab case to Pascal case. */
+  KebabToPascal({ it.camelize('-').capitalize() }),
+  /** Converts the field name from Pascal case to snake case. */
+  PascalToSnake({ it.decamelize('_') }),
+  /** Converts the field name from Pascal case to kebab case. */
+  PascalToKebab({ it.decamelize('-') }),
+  /** Converts the field name from Pascal case to camel case. */
+  PascalToCamel({ it.decapitalize() }),
 
   /**
    * Allows for definition of a custom name conversion method.
