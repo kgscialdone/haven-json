@@ -10,14 +10,14 @@ import kotlin.reflect.jvm.*
  */
 interface JsonSchema {
   @Suppress("unchecked_cast")
-  fun toJson(nameConverter: NameConverter = AS_WRITTEN):JsonObject {
+  fun toJson():JsonObject {
     val constructor = this::class.primaryConstructor
       ?: throw NullPointerException("Cannot convert constructorless type ${this::class.simpleName} to JSON")
 
     val out = constructor.parameters.map { param ->
       val prop = (this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>).get(this)
-      (param.findAnnotation<JsonProperty>()?.name ?: nameConverter(param.name!!)) to when {
-        prop is JsonSchema -> prop.toJson(nameConverter)
+      (param.findAnnotation<JsonProperty>()?.name ?: param.name!!) to when {
+        prop is JsonSchema -> prop.toJson()
 
         Json(prop) is JsonString && prop !is String && prop !is JsonString -> {
           val className = if(prop != null) prop::class.simpleName else "null"
