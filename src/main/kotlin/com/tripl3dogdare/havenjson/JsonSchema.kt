@@ -250,15 +250,15 @@ enum class NamePolicy(private val f:((String) -> String)?) {
   /** Converts the field name to lowercase. */
   Lowercase(String::toLowerCase),
   /** Converts the field name from camel case to snake case. */
-  CamelToSnake({ it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }),
+  CamelToSnake({ it.decamelize('_') }),
   /** Converts the field name from camel case to kebab case. */
-  CamelToKebab({ it.replace(Regex("([A-Z])"), "-$1").toLowerCase() }),
+  CamelToKebab({ it.decamelize('-') }),
   /** Converts the field name from snake case to camel case. */
-  SnakeToCamel({ it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }),
+  SnakeToCamel({ it.camelize('_') }),
   /** Converts the field name from snake case to kebab case. */
   SnakeToKebab({ it.replace("_", "-") }),
   /** Converts the field name from kebab case to camel case. */
-  KebabToCamel({ it.toLowerCase().replace(Regex("-(\\w)")) { it.groups[1]!!.value.toUpperCase() } }),
+  KebabToCamel({ it.camelize('-') }),
   /** Converts the field name from kebab case to snake case. */
   KebabToSnake({ it.replace("-", "_") }),
 

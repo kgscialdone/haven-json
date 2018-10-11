@@ -38,3 +38,8 @@ internal val <T, C : Collection<T>> C.head get():T? = elementAtOrNull(0)
 internal val <T, C : Collection<T>> C.tail get():List<T> = drop(1)
 internal operator fun Regex.contains(text:Char):Boolean = contains(text.toString())
 internal operator fun Regex.contains(text:CharSequence):Boolean = this.matches(text)
+
+internal fun String.camelize(sep:Char):String =
+  this.toLowerCase().replace(Regex("$sep(\\w)")) { it.groups[1]!!.value.toUpperCase() }
+internal fun String.decamelize(sep:Char):String =
+  this.replace(Regex("([A-Z])"), "$sep$1").toLowerCase()
