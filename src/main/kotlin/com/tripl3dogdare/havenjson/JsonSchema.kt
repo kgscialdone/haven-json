@@ -97,7 +97,6 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
  * @param T The type to return. Must inherit from [JsonSchema].
  * @param constructor The constructor function to call.
  * @param raw The raw [JsonValue].
- * @param nameConverter The function to use to convert JSON property names into matching constructor parameter names.
  * @param deserializers The [Deserializers] instance to use for custom deserialization functions.
  * @return The results of calling the given constructor with named parameters corresponding to the property names of
  *         the given JSON object.

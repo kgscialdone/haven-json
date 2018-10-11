@@ -10,6 +10,14 @@
 <tbody>
 <tr>
 <td>
+<a href="../com.tripl3dogdare.havenjson/-custom-name-policy/index.html">com.tripl3dogdare.havenjson.CustomNamePolicy</a></td>
+<td>
+<p>Base interface for use with <a href="../com.tripl3dogdare.havenjson/-name-policy/-custom.html">NamePolicy.Custom</a>.
+Must be implemented by a companion object on any <a href="../com.tripl3dogdare.havenjson/-json-schema.html">JsonSchema</a>s declaring a custom <a href="../com.tripl3dogdare.havenjson/-name-policy/index.html">NamePolicy</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
 <a href="../com.tripl3dogdare.havenjson/-deserializers/index.html">com.tripl3dogdare.havenjson.Deserializers</a></td>
 <td>
 <p>Represents a group of custom deserializer functions.
@@ -54,6 +62,17 @@ reason you need to have multiple groups of deserializers, this class is availabl
 </tr>
 <tr>
 <td>
+<a href="../com.tripl3dogdare.havenjson/-json-name-policy/index.html">com.tripl3dogdare.havenjson.JsonNamePolicy</a></td>
+<td>
+<p>Sets the desired <a href="../com.tripl3dogdare.havenjson/-name-policy/index.html">NamePolicy</a> for a given <a href="../com.tripl3dogdare.havenjson/-json-schema.html">JsonSchema</a> subclass.
+If this annotation is not present, <a href="../com.tripl3dogdare.havenjson/-name-policy/-as-written.html">NamePolicy.AsWritten</a> will be assumed.
+If multiple <a href="../com.tripl3dogdare.havenjson/-name-policy/index.html">NamePolicy</a>s are passed, they will be applied from left to right.
+If <a href="../com.tripl3dogdare.havenjson/-name-policy/-custom.html">NamePolicy.Custom</a> is passed, the <a href="../com.tripl3dogdare.havenjson/-json-schema.html">JsonSchema</a> subclass must define a companion object
+inheriting from <a href="../com.tripl3dogdare.havenjson/-custom-name-policy/index.html">CustomNamePolicy</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
 <a href="../com.tripl3dogdare.havenjson/-json-null/index.html">com.tripl3dogdare.havenjson.JsonNull</a></td>
 <td>
 <p>JSON-boxed null</p>
@@ -78,12 +97,12 @@ reason you need to have multiple groups of deserializers, this class is availabl
 <a href="../com.tripl3dogdare.havenjson/-json-property/index.html">com.tripl3dogdare.havenjson.JsonProperty</a></td>
 <td>
 <p>Marks a constructor parameter to be deserialized from a specific property name.
-Overrides the nameConverter parameter of <a href="../com.tripl3dogdare.havenjson/deserialize.html">deserialize</a>.</p>
+Overrides <a href="../com.tripl3dogdare.havenjson/-json-name-policy/index.html">JsonNamePolicy</a> if set.</p>
 </td>
 </tr>
 <tr>
 <td>
-<a href="../com.tripl3dogdare.havenjson/-json-schema/index.html">com.tripl3dogdare.havenjson.JsonSchema</a></td>
+<a href="../com.tripl3dogdare.havenjson/-json-schema.html">com.tripl3dogdare.havenjson.JsonSchema</a></td>
 <td>
 <p>Base class for deserializable objects.
 Inheriting from this marks a class as a valid target for <a href="../com.tripl3dogdare.havenjson/deserialize.html">JsonValue.Companion.deserialize</a>.</p>
@@ -102,6 +121,13 @@ Inheriting from this marks a class as a valid target for <a href="../com.tripl3d
 <td>
 <p>The main wrapper for a JSON-compatible value.
 Implemented for each of the different JSON-supported data types.</p>
+</td>
+</tr>
+<tr>
+<td>
+<a href="../com.tripl3dogdare.havenjson/-name-policy/index.html">com.tripl3dogdare.havenjson.NamePolicy</a></td>
+<td>
+<p>Used with <a href="../com.tripl3dogdare.havenjson/-json-name-policy/index.html">JsonNamePolicy</a> to define the desired name conversion strategy for a given <a href="../com.tripl3dogdare.havenjson/-json-schema.html">JsonSchema</a>.</p>
 </td>
 </tr>
 </tbody>

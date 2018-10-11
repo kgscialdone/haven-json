@@ -1,0 +1,189 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>NamePolicy - haven-json</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">haven-json</a>&nbsp;/&nbsp;<a href="../index.html">com.tripl3dogdare.havenjson</a>&nbsp;/&nbsp;<a href="./index.html">NamePolicy</a><br/>
+<br/>
+<h1>NamePolicy</h1>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">NamePolicy</span></code>
+<p>Used with <a href="../-json-name-policy/index.html">JsonNamePolicy</a> to define the desired name conversion strategy for a given <a href="../-json-schema.html">JsonSchema</a>.</p>
+<h3>Enum Values</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-as-written.html">AsWritten</a></p>
+</td>
+<td>
+<p>Leaves the field name as-is (default).</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-uppercase.html">Uppercase</a></p>
+</td>
+<td>
+<p>Converts the field name to uppercase.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-lowercase.html">Lowercase</a></p>
+</td>
+<td>
+<p>Converts the field name to lowercase.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-camel-to-snake.html">CamelToSnake</a></p>
+</td>
+<td>
+<p>Converts the field name from camel case to snake case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-camel-to-kebab.html">CamelToKebab</a></p>
+</td>
+<td>
+<p>Converts the field name from camel case to kebab case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-camel-to-pascal.html">CamelToPascal</a></p>
+</td>
+<td>
+<p>Converts the field name from camel case to Pascal case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-snake-to-camel.html">SnakeToCamel</a></p>
+</td>
+<td>
+<p>Converts the field name from snake case to camel case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-snake-to-kebab.html">SnakeToKebab</a></p>
+</td>
+<td>
+<p>Converts the field name from snake case to kebab case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-snake-to-pascal.html">SnakeToPascal</a></p>
+</td>
+<td>
+<p>Converts the field name from snake case to Pascal case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-kebab-to-camel.html">KebabToCamel</a></p>
+</td>
+<td>
+<p>Converts the field name from kebab case to camel case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-kebab-to-snake.html">KebabToSnake</a></p>
+</td>
+<td>
+<p>Converts the field name from kebab case to snake case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-kebab-to-pascal.html">KebabToPascal</a></p>
+</td>
+<td>
+<p>Converts the field name from kebab case to Pascal case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-pascal-to-snake.html">PascalToSnake</a></p>
+</td>
+<td>
+<p>Converts the field name from Pascal case to snake case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-pascal-to-kebab.html">PascalToKebab</a></p>
+</td>
+<td>
+<p>Converts the field name from Pascal case to kebab case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-pascal-to-camel.html">PascalToCamel</a></p>
+</td>
+<td>
+<p>Converts the field name from Pascal case to camel case.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-custom.html">Custom</a></p>
+</td>
+<td>
+<p>Allows for definition of a custom name conversion method.
+When used, the host <a href="../-json-schema.html">JsonSchema</a> must define a companion object implementing <a href="../-custom-name-policy/index.html">CustomNamePolicy</a>,
+otherwise the name will not be changed.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="invoke.html">invoke</a></p>
+</td>
+<td>
+<code><span class="keyword">operator</span> <span class="keyword">fun </span><span class="identifier">invoke</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.NamePolicy$invoke(kotlin.String, kotlin.reflect.KClass((com.tripl3dogdare.havenjson.JsonSchema)))/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.tripl3dogdare.havenjson.NamePolicy$invoke(kotlin.String, kotlin.reflect.KClass((com.tripl3dogdare.havenjson.JsonSchema)))/clazz">clazz</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html"><span class="identifier">KClass</span></a><span class="symbol">&lt;</span><a href="../-json-schema.html"><span class="identifier">JsonSchema</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code>
+<p>Applies this <a href="./index.html">NamePolicy</a> for the given name.
+If this is <a href="-custom.html">NamePolicy.Custom</a>, the given class will be used to determine the method to use,
+via a companion object implementing <a href="../-custom-name-policy/index.html">CustomNamePolicy</a>. If that companion object does not
+exist, the name will not be changed.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="get-declared-name-policies.html">getDeclaredNamePolicies</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getDeclaredNamePolicies</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.NamePolicy.Companion$getDeclaredNamePolicies(kotlin.reflect.KClass((com.tripl3dogdare.havenjson.JsonSchema)))/clazz">clazz</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html"><span class="identifier">KClass</span></a><span class="symbol">&lt;</span><a href="../-json-schema.html"><span class="identifier">JsonSchema</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="./index.html"><span class="identifier">NamePolicy</span></a><span class="symbol">&gt;</span></code>
+<p>Returns all declared <a href="./index.html">NamePolicy</a>s for the given class.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="get-name-converter.html">getNameConverter</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getNameConverter</span><span class="symbol">(</span><span class="identifier" id="com.tripl3dogdare.havenjson.NamePolicy.Companion$getNameConverter(kotlin.reflect.KClass((com.tripl3dogdare.havenjson.JsonSchema)))/clazz">clazz</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html"><span class="identifier">KClass</span></a><span class="symbol">&lt;</span><a href="../-json-schema.html"><span class="identifier">JsonSchema</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="symbol">(</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code>
+<p>Builds a name converter function for the given class.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
