@@ -1,33 +1,34 @@
 package com.tripl3dogdare.havenjson
 
-internal tailrec fun String.jsonEscape(acc:String=""):String {
-  if(this.isEmpty()) return acc
-  return when(this[0]) {
-    '\"' -> tail.jsonEscape("$acc\\\"")
-    '\\' -> tail.jsonEscape("$acc\\\\")
-    '\n' -> tail.jsonEscape("$acc\\n")
-    '\b' -> tail.jsonEscape("$acc\\b")
-    '\r' -> tail.jsonEscape("$acc\\r")
-    '\t' -> tail.jsonEscape("$acc\\t")
-    '\u000C' -> tail.jsonEscape("$acc\\f")
-    else -> tail.jsonEscape(acc+this[0])
+internal fun String.jsonEscape() = fold("") { acc, c ->
+  acc + when (c) {
+    '\"' -> """\""""
+    '\\' -> """\\"""
+    '\n' -> """\n"""
+    '\b' -> """\b"""
+    '\r' -> """\r"""
+    '\t' -> """\t"""
+    '\u000C' -> """\f"""
+    else -> c
   }
 }
 
-internal tailrec fun String.jsonUnescape(acc:String=""):String {
-  if(this.isEmpty()) return acc
-  return if(this[0] == '\\') when(this[1]) {
-    '"' -> drop(2).jsonUnescape("$acc\"")
-    '\\' -> drop(2).jsonUnescape("$acc\\")
-    'n' -> drop(2).jsonUnescape("$acc\n")
-    'b' -> drop(2).jsonUnescape("$acc\b")
-    'r' -> drop(2).jsonUnescape("$acc\r")
-    't' -> drop(2).jsonUnescape("$acc\t")
-    'f' -> drop(2).jsonUnescape("$acc\u000c")
-    'u' -> drop(6).jsonUnescape(acc+this.drop(2).take(4).toInt(16).toChar())
-    else -> drop(2).jsonUnescape(acc+this[1])
-  } else tail.jsonUnescape(acc+this[0])
-}
+internal fun String.jsonUnescape() = this
+  .replace(Regex("""\\([^u])""")) {
+    // Single character escapes except \u
+    when (it.groupValues[1]) {
+      "n" -> "\n"
+      "b" -> "\b"
+      "r" -> "\r"
+      "t" -> "\t"
+      "f" -> "\u000c"
+      else -> it.groupValues[1] // Also covers the cases of "\"", "\\"
+    }
+  }
+  .replace(Regex("""\\u([0-9A-Fa-f]{4})""")) {
+    // Unicode
+    it.groupValues[1].toInt(16).toChar().toString()
+  }
 
 internal fun String.indent(spaces:Int=2) =
   split("\n").map { " ".repeat(spaces)+it }.joinToString("\n")
