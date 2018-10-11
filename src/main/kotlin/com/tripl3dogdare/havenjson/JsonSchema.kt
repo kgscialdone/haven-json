@@ -242,7 +242,7 @@ interface CustomNamePolicy {
 /**
  * Used with [JsonNamePolicy] to define the desired name conversion strategy for a given [JsonSchema].
  */
-enum class NamePolicy(private val f:((String) -> String)?) {
+enum class NamePolicy(private val f:((String) -> String)) {
   /** Leaves the field name as-is (default). */
   AsWritten({it}),
   /** Converts the field name to uppercase. */
@@ -276,26 +276,24 @@ enum class NamePolicy(private val f:((String) -> String)?) {
 
   /**
    * Allows for definition of a custom name conversion method.
-   * When used, the host [JsonSchema] must define a companion object implementing [CustomNamePolicy].
+   * When used, the host [JsonSchema] must define a companion object implementing [CustomNamePolicy],
+   *  otherwise the name will not be changed.
    */
-  Custom(null);
+  Custom({it});
 
   /**
    * Applies this [NamePolicy] for the given name.
    * If this is [NamePolicy.Custom], the given class will be used to determine the method to use,
-   *  via a companion object implementing [CustomNamePolicy].
+   *  via a companion object implementing [CustomNamePolicy]. If that companion object does not
+   *  exist, the name will not be changed.
    *
    * @param name The name to convert.
    * @param clazz The host [JsonSchema] class to pull custom policies from.
    * @return The converted name.
-   * @throws ClassNotFoundException if called on [NamePolicy.Custom] with a [clazz] that does not define
-   *  a companion object implementing [CustomNamePolicy].
    */
   operator fun invoke(name:String, clazz:KClass<JsonSchema>):String = when(this) {
-    Custom ->
-      (clazz.companionObjectInstance as? CustomNamePolicy)?.convertFieldName(name)
-        ?: throw ClassNotFoundException("${clazz.simpleName} declares a custom name policy but does not define a companion object inheriting from CustomNamePolicy")
-    else -> f!!(name)
+    Custom -> (clazz.companionObjectInstance as? CustomNamePolicy)?.convertFieldName(name) ?: f(name)
+    else -> f(name)
   }
 
   companion object {
@@ -305,7 +303,7 @@ enum class NamePolicy(private val f:((String) -> String)?) {
      * @return A (String) -> String combining all declared [NamePolicy]s for [clazz].
      */
     fun getNameConverter(clazz: KClass<JsonSchema>) =
-      getDeclaredNamePolicies(clazz).fold({n:String->n}) { a, b -> { name -> b(a(name), clazz) }}
+      getDeclaredNamePolicies(clazz).fold(AsWritten.f) { a, b -> { name -> b(a(name), clazz) }}
 
     /**
      * Returns all declared [NamePolicy]s for the given class.
@@ -313,7 +311,7 @@ enum class NamePolicy(private val f:((String) -> String)?) {
      * @return A List<NamePolicy> containing all declared [NamePolicy]s for [clazz].
      */
     fun getDeclaredNamePolicies(clazz:KClass<JsonSchema>) =
-      clazz.findAnnotation<JsonNamePolicy>()?.nc?.toList() ?: listOf(AsWritten)
+      clazz.findAnnotation<JsonNamePolicy>()?.nc?.toList() ?: emptyList()
   }
 }
 

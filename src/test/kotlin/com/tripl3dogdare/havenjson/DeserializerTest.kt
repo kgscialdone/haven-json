@@ -238,10 +238,10 @@ class DeserializerTest : WordSpec({
     }
 
     "throw when encountering a custom name policy with no defined converter" {
-      shouldThrow<ClassNotFoundException> {
+      shouldThrow<NoSuchFieldException> {
         Json.deserialize(::CustomNamePolicyUndef, """{ "LOWERCASE": true }""")
       }.also {
-        it.message shouldBe "CustomNamePolicyUndef declares a custom name policy but does not define a companion object inheriting from CustomNamePolicy"
+        it.message shouldBe "Cannot deserialize JSON parameter LOWERCASE, no matching constructor parameter found"
       }
     }
   }
