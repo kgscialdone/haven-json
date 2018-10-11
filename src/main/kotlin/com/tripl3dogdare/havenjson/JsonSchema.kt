@@ -8,22 +8,7 @@ import kotlin.reflect.jvm.*
  * Base class for deserializable objects.
  * Inheriting from this marks a class as a valid target for [JsonValue.Companion.deserialize].
  */
-interface JsonSchema {
-  companion object {
-    /** Name converter function that leaves names as-is. */
-    val AS_WRITTEN: NameConverter = { it }
-    /** Name converter function that converts names to uppercase. */
-    val UPPERCASE: NameConverter = String::toUpperCase
-    /** Name converter function that converts names to lowercase. */
-    val LOWERCASE: NameConverter = String::toLowerCase
-    /** Name converter function that converts names from camelCase to snake_case. */
-    val CAMEL_TO_SNAKE: NameConverter =
-      { it.replace(Regex("([A-Z])"), "_$1").toLowerCase() }
-    /** Name converter function that converts names from snake_case to camelCase. */
-    val SNAKE_TO_CAMEL: NameConverter =
-      { it.toLowerCase().replace(Regex("_(\\w)")) { it.groups[1]!!.value.toUpperCase() } }
-  }
-}
+interface JsonSchema
 
 /**
  * Represents a group of custom deserializer functions.
@@ -86,28 +71,25 @@ open class Deserializers {
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:String,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ) =
-  deserialize(clazz, Json.parse(raw), nameConverter, deserializers)
+  deserialize(clazz, Json.parse(raw), deserializers)
 
 /** Deserialize a [JsonValue] via the primary constructor of the given class. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   clazz:KClass<T>,
   raw:Json,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ) =
-  deserialize(clazz.primaryConstructor!!, raw, nameConverter, deserializers)
+  deserialize(clazz.primaryConstructor!!, raw, deserializers)
 
 /** Deserialize a JSON string via the given constructor. */
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:String,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ) =
-  deserialize(constructor, Json.parse(raw), nameConverter, deserializers)
+  deserialize(constructor, Json.parse(raw), deserializers)
 
 /**
  * Deserialize a [JsonValue] via the given constructor.
@@ -115,7 +97,6 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
  * @param T The type to return. Must inherit from [JsonSchema].
  * @param constructor The constructor function to call.
  * @param raw The raw [JsonValue].
- * @param nameConverter The function to use to convert JSON property names into matching constructor parameter names.
  * @param deserializers The [Deserializers] instance to use for custom deserialization functions.
  * @return The results of calling the given constructor with named parameters corresponding to the property names of
  *         the given JSON object.
@@ -128,7 +109,6 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
 fun <T: JsonSchema> JsonValue.Companion.deserialize(
   constructor:KFunction<T>,
   raw:Json,
-  nameConverter:NameConverter = JsonSchema.AS_WRITTEN,
   deserializers:Deserializers = Deserializers
 ):T {
   if(raw !is JsonObject)
@@ -137,7 +117,8 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
     val json = raw[name]
     val it = constructor.parameters.find {
       it.isAnnotated<JsonProperty> { name == it.name } ||
-      !it.isAnnotated<JsonProperty>() && it.name == nameConverter(name)
+      !it.isAnnotated<JsonProperty>() &&
+      it.name == NamePolicy.getNameConverter(constructor.returnType.jvmErasure as KClass<JsonSchema>)(name)
     } ?: throw NoSuchFieldException("Cannot deserialize JSON parameter $name, no matching constructor parameter found")
 
     Pair(it, when {
@@ -159,7 +140,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
       it.type.isSupertypeOf(jsonObject) && json is JsonObject -> json
 
       it.type.isSubtypeOf(jdeserType) && json::class.isSubclassOf(JsonObject::class) ->
-        deserialize(it.type.jvmErasure as KClass<JsonSchema>, json, nameConverter, deserializers)
+        deserialize(it.type.jvmErasure as KClass<JsonSchema>, json, deserializers)
       deserializers.has(it.type.jvmErasure) ->
         try { deserializers.deserialize(it.type.jvmErasure, json) }
         catch(e:Exception) {
@@ -187,7 +168,7 @@ fun <T: JsonSchema> JsonValue.Companion.deserialize(
           innerType.isSubtypeOf(jdeserType) -> deserializeList(json, innerTypeRaw) { i, j ->
             if(!j::class.createType().isSubtypeOf(jsonObject))
               throw ClassCastException("Cannot cast value of JSON parameter $name[$i] to $innerType")
-            deserialize(innerType.jvmErasure as KClass<JsonSchema>, j, nameConverter, deserializers)
+            deserialize(innerType.jvmErasure as KClass<JsonSchema>, j, deserializers)
           }
 
           deserializers.has(innerType.jvmErasure) -> deserializeList(json, innerTypeRaw) { i, j ->
@@ -224,17 +205,117 @@ private inline fun <T> deserializeList(json:JsonArray, listTypeRaw:KType, f:(Int
 
 /**
  * Marks a constructor parameter to be deserialized from a specific property name.
- * Overrides the nameConverter parameter of [deserialize].
+ * Overrides [JsonNamePolicy] if set.
  * @property name The name of the JSON property this parameter should take it's value from when deserialized.
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @MustBeDocumented
 annotation class JsonProperty(val name:String)
 
+/**
+ * Sets the desired [NamePolicy] for a given [JsonSchema] subclass.
+ * If this annotation is not present, [NamePolicy.AsWritten] will be assumed.
+ * If multiple [NamePolicy]s are passed, they will be applied from left to right.
+ * If [NamePolicy.Custom] is passed, the [JsonSchema] subclass must define a companion object
+ *  inheriting from [CustomNamePolicy].
+ *
+ * @property nc The [NamePolicy] (or multiple) to apply when deserializing.
+ */
+@Target(AnnotationTarget.CLASS)
+@MustBeDocumented
+annotation class JsonNamePolicy(vararg val nc:NamePolicy)
+
+/**
+ * Base interface for use with [NamePolicy.Custom].
+ * Must be implemented by a companion object on any [JsonSchema]s declaring a custom [NamePolicy].
+ */
+interface CustomNamePolicy {
+  /**
+   * Converts the name of a JSON field to it's corresponding constructor parameter name.
+   * @param name The field name in the JSON source.
+   * @return The name of the corresponding constructor parameter for this [JsonSchema].
+   */
+  fun convertFieldName(name:String):String
+}
+
+/**
+ * Used with [JsonNamePolicy] to define the desired name conversion strategy for a given [JsonSchema].
+ */
+enum class NamePolicy(internal val nc:(String) -> String) {
+  /** Leaves the field name as-is (default). */
+  AsWritten({it}),
+  /** Converts the field name to uppercase. */
+  Uppercase(String::toUpperCase),
+  /** Converts the field name to lowercase. */
+  Lowercase(String::toLowerCase),
+  /** Converts the field name from camel case to snake case. */
+  CamelToSnake({ it.decamelize('_') }),
+  /** Converts the field name from camel case to kebab case. */
+  CamelToKebab({ it.decamelize('-') }),
+  /** Converts the field name from camel case to Pascal case. */
+  CamelToPascal({ it.capitalize() }),
+  /** Converts the field name from snake case to camel case. */
+  SnakeToCamel({ it.camelize('_') }),
+  /** Converts the field name from snake case to kebab case. */
+  SnakeToKebab({ it.replace("_", "-") }),
+  /** Converts the field name from snake case to Pascal case. */
+  SnakeToPascal({ it.camelize('_').capitalize() }),
+  /** Converts the field name from kebab case to camel case. */
+  KebabToCamel({ it.camelize('-') }),
+  /** Converts the field name from kebab case to snake case. */
+  KebabToSnake({ it.replace("-", "_") }),
+  /** Converts the field name from kebab case to Pascal case. */
+  KebabToPascal({ it.camelize('-').capitalize() }),
+  /** Converts the field name from Pascal case to snake case. */
+  PascalToSnake({ it.decamelize('_') }),
+  /** Converts the field name from Pascal case to kebab case. */
+  PascalToKebab({ it.decamelize('-') }),
+  /** Converts the field name from Pascal case to camel case. */
+  PascalToCamel({ it.decapitalize() }),
+
+  /**
+   * Allows for definition of a custom name conversion method.
+   * When used, the host [JsonSchema] must define a companion object implementing [CustomNamePolicy],
+   *  otherwise the name will not be changed.
+   */
+  Custom({it});
+
+  /**
+   * Applies this [NamePolicy] for the given name.
+   * If this is [NamePolicy.Custom], the given class will be used to determine the method to use,
+   *  via a companion object implementing [CustomNamePolicy]. If that companion object does not
+   *  exist, the name will not be changed.
+   *
+   * @param name The name to convert.
+   * @param clazz The host [JsonSchema] class to pull custom policies from.
+   * @return The converted name.
+   */
+  operator fun invoke(name:String, clazz:KClass<JsonSchema>):String = when(this) {
+    Custom -> (clazz.companionObjectInstance as? CustomNamePolicy)?.convertFieldName(name) ?: nc(name)
+    else -> nc(name)
+  }
+
+  companion object {
+    /**
+     * Builds a name converter function for the given class.
+     * @param clazz The [JsonSchema] subclass to get the name converter for.
+     * @return A (String) -> String combining all declared [NamePolicy]s for [clazz].
+     */
+    fun getNameConverter(clazz: KClass<JsonSchema>) =
+      getDeclaredNamePolicies(clazz).fold(AsWritten.nc) { a, b -> { name -> b(a(name), clazz) }}
+
+    /**
+     * Returns all declared [NamePolicy]s for the given class.
+     * @param clazz The [JsonSchema] subclass to get the [NamePolicy]s for.
+     * @return A List<NamePolicy> containing all declared [NamePolicy]s for [clazz].
+     */
+    fun getDeclaredNamePolicies(clazz:KClass<JsonSchema>) =
+      clazz.findAnnotation<JsonNamePolicy>()?.nc?.toList() ?: emptyList()
+  }
+}
+
 private inline fun <reified A: Annotation> KParameter.isAnnotated(pred:(A) -> Boolean = {true}) =
   this.annotations.any { it.annotationClass == A::class && pred(it as A) }
-
-private typealias NameConverter = (String) -> String
 
 private val intType = Int::class.createType()
 private val floatType = Float::class.createType()

@@ -151,13 +151,23 @@ class Field(name:String, value:String) : JsonSchema
 val field = Json.deserialize(::Field, """{"name":"Test","value":"test"}""")
 ```
 
-**Deserializing with a name converter function**
+**Deserializing with a name policy**
 ```kotlin
-class Thing(thingName:String) : JsonSchema
+// Use a built-in name policy...
+@JsonNamePolicy(NamePolicy.SnakeToCamel)
+data class NamePolicyTest(val propName:String) : JsonSchema
 
-// The optional third parameter can be any (String) -> String function
-// JsonSchema provides some common defaults like snake case to camel case (shown here)
-val field = Json.deserialize(::Thing, """{"thing_name":"Bob"}""", JsonSchema.SNAKE_TO_CAMEL)
+Json.deserialize(::NamePolicyTest, """{ "prop_name": "test" }""")
+
+// ...or a custom one!
+@JsonNamePolicy(NamePolicy.Custom)
+data class NamePolicyTest(val propname:String) : JsonSchema {
+  companion object : CustomNamePolicy {
+    override fun convertFieldName(name:String) = name.toLowerCase()
+  }
+}
+
+Json.deserialize(::NamePolicyTest, """{ "PROPNAME": "test" }""")
 ```
 
 **Deserializing with overridden property names**

@@ -137,26 +137,11 @@ class DeserializerTest : WordSpec({
       Json.deserialize(::normalFunction, """{"name":"Santa Claus","age":500}""")
     }
 
-    "apply name converter functions" {
-      val camelCase = Json.deserialize(::NamesCamel, """{
-        "camel_case": true,
-        "property_names": ["camelCase", "propertyNames"]
-      }""", JsonSchema.SNAKE_TO_CAMEL)
-
-      val snakeCase = Json.deserialize(::NamesSnake, """{
-        "camelCase": false,
-        "propertyNames": ["camel_case", "property_names"]
-      }""", JsonSchema.CAMEL_TO_SNAKE)
-
-      camelCase shouldBe NamesCamel(true, listOf("camelCase", "propertyNames"))
-      snakeCase shouldBe NamesSnake(false, listOf("camel_case", "property_names"))
-    }
-
     "use the JsonProperty annotation to resolve names" {
       val deser = Json.deserialize(::NamesChanged, """{
         "camel_case": true,
         "propNames": ["camelCase", "propertyNames"]
-      }""", JsonSchema.SNAKE_TO_CAMEL)
+      }""")
 
       deser shouldBe NamesChanged(true, listOf("camelCase", "propertyNames"))
     }
@@ -298,16 +283,7 @@ class DeserializerTest : WordSpec({
     val value:String?
   ) : JsonSchema
 
-  data class NamesCamel(
-    val camelCase:Boolean,
-    val propertyNames:List<String>
-  ) : JsonSchema
-
-  data class NamesSnake(
-    val camel_case:Boolean,
-    val property_names:List<String>
-  ) : JsonSchema
-
+  @JsonNamePolicy(NamePolicy.SnakeToCamel)
   data class NamesChanged(
     val camelCase:Boolean,
     @JsonProperty("propNames") val propertyNames:List<String>
