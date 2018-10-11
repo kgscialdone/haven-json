@@ -242,7 +242,7 @@ interface CustomNamePolicy {
 /**
  * Used with [JsonNamePolicy] to define the desired name conversion strategy for a given [JsonSchema].
  */
-enum class NamePolicy(private val f:((String) -> String)) {
+enum class NamePolicy(internal val nc:(String) -> String) {
   /** Leaves the field name as-is (default). */
   AsWritten({it}),
   /** Converts the field name to uppercase. */
@@ -292,8 +292,8 @@ enum class NamePolicy(private val f:((String) -> String)) {
    * @return The converted name.
    */
   operator fun invoke(name:String, clazz:KClass<JsonSchema>):String = when(this) {
-    Custom -> (clazz.companionObjectInstance as? CustomNamePolicy)?.convertFieldName(name) ?: f(name)
-    else -> f(name)
+    Custom -> (clazz.companionObjectInstance as? CustomNamePolicy)?.convertFieldName(name) ?: nc(name)
+    else -> nc(name)
   }
 
   companion object {
@@ -303,7 +303,7 @@ enum class NamePolicy(private val f:((String) -> String)) {
      * @return A (String) -> String combining all declared [NamePolicy]s for [clazz].
      */
     fun getNameConverter(clazz: KClass<JsonSchema>) =
-      getDeclaredNamePolicies(clazz).fold(AsWritten.f) { a, b -> { name -> b(a(name), clazz) }}
+      getDeclaredNamePolicies(clazz).fold(AsWritten.nc) { a, b -> { name -> b(a(name), clazz) }}
 
     /**
      * Returns all declared [NamePolicy]s for the given class.

@@ -42,4 +42,4 @@ internal operator fun Regex.contains(text:CharSequence):Boolean = this.matches(t
 internal fun String.camelize(sep:Char):String =
   this.toLowerCase().replace(Regex("$sep(\\w)")) { it.groups[1]!!.value.toUpperCase() }
 internal fun String.decamelize(sep:Char):String =
-  this.replace(Regex("([A-Z])"), "$sep$1").toLowerCase()
+  this.replace(Regex("(?!^)([A-Z])"), "$sep$1").toLowerCase()
