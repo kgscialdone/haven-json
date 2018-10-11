@@ -2,7 +2,7 @@
 [![Build Status](https://www.travis-ci.com/tripl3dogdare/haven-json.svg?branch=master)](https://www.travis-ci.com/tripl3dogdare/haven-json)
 [![Issue Count](https://img.shields.io/github/issues/tripl3dogdare/haven-json.svg)](https://github.com/tripl3dogdare/haven-json/issues)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
-[![Documentation: Read Now](https://img.shields.io/badge/documentation-read%20now-blue.svg)](http://docs.tripl3dogdare.com/haven-json/1.1.1/)
+[![Documentation: Read Now](https://img.shields.io/badge/documentation-read%20now-blue.svg)](http://docs.tripl3dogdare.com/haven-json/1.2.0/)
 
 # Haven
 Haven is a simple JSON library written in pure Kotlin with no third-party dependencies.
@@ -10,7 +10,7 @@ It was designed with simplicity of use in mind, with the goal of letting the use
 JSON with an almost Javascript-like syntax.
 
 **Quick Links:**
-- [API Documentation](http://docs.tripl3dogdare.com/haven-json/1.1.1/)
+- [API Documentation](http://docs.tripl3dogdare.com/haven-json/1.2.0/)
 - [Installation](#installation)
 - [Examples](#examples)
 
@@ -66,7 +66,7 @@ allprojects {
 }
 
 dependencies {
-  implementation 'com.github.tripl3dogdare:haven-json:1.1.1'
+  implementation 'com.github.tripl3dogdare:haven-json:1.2.0'
 }
 ```
 
@@ -151,13 +151,23 @@ class Field(name:String, value:String) : JsonSchema
 val field = Json.deserialize(::Field, """{"name":"Test","value":"test"}""")
 ```
 
-**Deserializing with a name converter function**
+**Deserializing with a name policy**
 ```kotlin
-class Thing(thingName:String) : JsonSchema
+// Use a built-in name policy...
+@JsonNamePolicy(NamePolicy.SnakeToCamel)
+data class NamePolicyTest(val propName:String) : JsonSchema
 
-// The optional third parameter can be any (String) -> String function
-// JsonSchema provides some common defaults like snake case to camel case (shown here)
-val field = Json.deserialize(::Thing, """{"thing_name":"Bob"}""", JsonSchema.SNAKE_TO_CAMEL)
+Json.deserialize(::NamePolicyTest, """{ "prop_name": "test" }""")
+
+// ...or a custom one!
+@JsonNamePolicy(NamePolicy.Custom)
+data class NamePolicyTest(val propname:String) : JsonSchema {
+  companion object : CustomNamePolicy {
+    override fun convertFieldName(name:String) = name.toLowerCase()
+  }
+}
+
+Json.deserialize(::NamePolicyTest, """{ "PROPNAME": "test" }""")
 ```
 
 **Deserializing with overridden property names**
