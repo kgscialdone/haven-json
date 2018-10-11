@@ -137,26 +137,6 @@ class DeserializerTest : WordSpec({
       Json.deserialize(::normalFunction, """{"name":"Santa Claus","age":500}""")
     }
 
-    "apply declared name policies" {
-      val camelCase = Json.deserialize(::NamesCamel, """{
-        "camel_case": true,
-        "property_names": ["camelCase", "propertyNames"]
-      }""")
-
-      val snakeCase = Json.deserialize(::NamesSnake, """{
-        "camelCase": false,
-        "propertyNames": ["camel_case", "property_names"]
-      }""")
-
-      val customPolicy = Json.deserialize(::CustomNamePolicy, """{ "LOWERCASE": true }""")
-      val chainedPolicy = Json.deserialize(::ChainedNamePolicy, """{ "upperSnake": true }""")
-
-      camelCase shouldBe NamesCamel(true, listOf("camelCase", "propertyNames"))
-      snakeCase shouldBe NamesSnake(false, listOf("camel_case", "property_names"))
-      customPolicy shouldBe CustomNamePolicy(true)
-      chainedPolicy shouldBe ChainedNamePolicy(true)
-    }
-
     "use the JsonProperty annotation to resolve names" {
       val deser = Json.deserialize(::NamesChanged, """{
         "camel_case": true,
@@ -236,14 +216,6 @@ class DeserializerTest : WordSpec({
         it.message shouldBe "Cannot cast value of JSON parameter invalid to java.util.Date"
       }
     }
-
-    "throw when encountering a custom name policy with no defined converter" {
-      shouldThrow<NoSuchFieldException> {
-        Json.deserialize(::CustomNamePolicyUndef, """{ "LOWERCASE": true }""")
-      }.also {
-        it.message shouldBe "Cannot deserialize JSON parameter LOWERCASE, no matching constructor parameter found"
-      }
-    }
   }
 }) {
   data class BasicTypes(
@@ -312,40 +284,9 @@ class DeserializerTest : WordSpec({
   ) : JsonSchema
 
   @JsonNamePolicy(NamePolicy.SnakeToCamel)
-  data class NamesCamel(
-    val camelCase:Boolean,
-    val propertyNames:List<String>
-  ) : JsonSchema
-
-  @JsonNamePolicy(NamePolicy.CamelToSnake)
-  data class NamesSnake(
-    val camel_case:Boolean,
-    val property_names:List<String>
-  ) : JsonSchema
-
-  @JsonNamePolicy(NamePolicy.SnakeToCamel)
   data class NamesChanged(
     val camelCase:Boolean,
     @JsonProperty("propNames") val propertyNames:List<String>
-  ) : JsonSchema
-
-  @JsonNamePolicy(NamePolicy.Custom)
-  data class CustomNamePolicy(
-    val lowercase:Boolean
-  ) : JsonSchema {
-    companion object : com.tripl3dogdare.havenjson.CustomNamePolicy {
-      override fun convertFieldName(name:String) = name.toLowerCase()
-    }
-  }
-
-  @JsonNamePolicy(NamePolicy.CamelToSnake, NamePolicy.Uppercase)
-  data class ChainedNamePolicy(
-    val UPPER_SNAKE:Boolean
-  ) : JsonSchema
-
-  @JsonNamePolicy(NamePolicy.Custom)
-  data class CustomNamePolicyUndef(
-    val lowercase: Boolean
   ) : JsonSchema
 
   data class CustomDeser(val date:ZonedDateTime) : JsonSchema
