@@ -13,19 +13,22 @@ internal fun String.jsonEscape() = fold("") { acc, c ->
   }
 }
 
-internal fun String.jsonUnescape() = replaceAll(mapOf(
-  """\"""" to "\"",
-  """\\""" to "\\",
-  """\n""" to "\n",
-  """\b""" to "\b",
-  """\r""" to "\r",
-  """\t""" to "\t",
-  """\f""" to "\u000c"))
+internal fun String.jsonUnescape() = this
+  .replace(Regex("""\\([^u])""")) {
+    // Single character escapes except \u
+    when (it.groupValues[1]) {
+      "n" -> "\n"
+      "b" -> "\b"
+      "r" -> "\r"
+      "t" -> "\t"
+      "f" -> "\u000c"
+      else -> it.groupValues[1] // Also covers the cases of "\"", "\\"
+    }
+  }
   .replace(Regex("""\\u([0-9A-Fa-f]{4})""")) {
+    // Unicode
     it.groupValues[1].toInt(16).toChar().toString()
   }
-  // Anything else - return as is (without the '\').
-  .replace(Regex("""\\([^"\\nbrtfu])""")) { it.groupValues[1] }
 
 internal fun String.indent(spaces:Int=2) =
   split("\n").map { " ".repeat(spaces)+it }.joinToString("\n")
@@ -36,8 +39,3 @@ internal val <T, C : Collection<T>> C.head get():T? = elementAtOrNull(0)
 internal val <T, C : Collection<T>> C.tail get():List<T> = drop(1)
 internal operator fun Regex.contains(text:Char):Boolean = contains(text.toString())
 internal operator fun Regex.contains(text:CharSequence):Boolean = this.matches(text)
-
-private fun String.replaceAll(mapping: Map<String, String>) =
-  mapping.entries.fold(this) { acc, entry ->
-    acc.replace(entry.key, entry.value)
-  }
