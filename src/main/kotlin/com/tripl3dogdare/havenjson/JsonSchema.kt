@@ -8,7 +8,29 @@ import kotlin.reflect.jvm.*
  * Base class for deserializable objects.
  * Inheriting from this marks a class as a valid target for [JsonValue.Companion.deserialize].
  */
-interface JsonSchema
+interface JsonSchema {
+  @Suppress("unchecked_cast")
+  fun toJson():JsonObject {
+    val constructor = this::class.primaryConstructor
+      ?: throw NullPointerException("Cannot convert constructorless type ${this::class.simpleName} to JSON")
+
+    val out = constructor.parameters.map { param ->
+      val prop = (this::class.declaredMemberProperties.first { it.name == param.name } as KProperty1<JsonSchema, Any?>).get(this)
+      (param.findAnnotation<JsonProperty>()?.name ?: param.name!!) to when {
+        prop is JsonSchema -> prop.toJson()
+
+        Json(prop) is JsonString && prop !is String && prop !is JsonString -> {
+          val className = if(prop != null) prop::class.simpleName else "null"
+          throw ClassCastException("Cannot convert $className to JSON")
+        }
+
+        else -> Json(prop)
+      }
+    }
+
+    return JsonObject(out.toMap())
+  }
+}
 
 /**
  * Represents a group of custom deserializer functions.
