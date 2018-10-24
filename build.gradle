@@ -17,7 +17,7 @@ version '1.1.1'
 
 repositories { mavenCentral() }
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.2.71"
     compile 'org.jetbrains.kotlin:kotlin-reflect:1.2.71'
     testCompile 'io.kotlintest:kotlintest-runner-junit5:3.1.7'
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.2.0"
