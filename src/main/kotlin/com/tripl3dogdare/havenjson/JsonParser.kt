@@ -120,7 +120,10 @@ object JsonParser {
     Token.False -> JsonBoolean(false) to tokens.tail
     Token.Null -> JsonNull to tokens.tail
 
-    is Token.Int -> JsonInt(tokens.head!!.text.toInt()) to tokens.tail
+    is Token.Int ->
+      tokens.head!!.text
+        .let { it.toIntOrNull()?.let(::JsonInt) ?: JsonLong(it.toLong()) }
+        .to(tokens.tail)
     is Token.Float -> JsonFloat(tokens.head!!.text.toFloat()) to tokens.tail
     is Token.String -> JsonString(tokens.head!!.text.jsonUnescape()) to tokens.tail
 
