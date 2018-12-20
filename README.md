@@ -1,6 +1,6 @@
-[![](https://jitpack.io/v/tripl3dogdare/haven-json.svg)](https://jitpack.io/#tripl3dogdare/haven-json)
-[![Build Status](https://www.travis-ci.com/tripl3dogdare/haven-json.svg?branch=master)](https://www.travis-ci.com/tripl3dogdare/haven-json)
-[![Issue Count](https://img.shields.io/github/issues/tripl3dogdare/haven-json.svg)](https://github.com/tripl3dogdare/haven-json/issues)
+[![](https://jitpack.io/v/swordglowsblue/haven-json.svg)](https://jitpack.io/#swordglowsblue/haven-json)
+[![Build Status](https://www.travis-ci.com/swordglowsblue/haven-json.svg?branch=master)](https://www.travis-ci.com/swordglowsblue/haven-json)
+[![Issue Count](https://img.shields.io/github/issues/swordglowsblue/haven-json.svg)](https://github.com/swordglowsblue/haven-json/issues)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 [![Documentation: Read Now](https://img.shields.io/badge/documentation-read%20now-blue.svg)](http://docs.tripl3dogdare.com/haven-json/1.1.2/)
 
@@ -66,7 +66,7 @@ allprojects {
 }
 
 dependencies {
-  implementation 'com.github.tripl3dogdare:haven-json:1.1.2'
+  implementation 'com.github.swordglowsblue:haven-json:1.1.2'
 }
 ```
 
