@@ -7,6 +7,12 @@ package com.tripl3dogdare.havenjson
 data class JsonInt(override val value:Int) : JsonValue<Int>()
 
 /**
+ * JSON-boxed Long
+ * @see [JsonValue]
+ */
+data class JsonLong(override val value:Long) : JsonValue<Long>()
+
+/**
  * JSON-boxed Float
  * @see [JsonValue]
  */

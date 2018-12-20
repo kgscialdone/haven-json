@@ -35,6 +35,8 @@ abstract class JsonValue<T> {
 
   /** Get the wrapped value as an Int (convenience method for [value]). */
   val asInt:Int? get() = value<Int>()
+  /** Get the wrapped value as a Long (convenience method for [value]). */
+  val asLong:Long? get() = value<Long>()
   /** Get the wrapped value as a Float (convenience method for [value]). */
   val asFloat:Float? get() = value<Float>()
   /** Get the wrapped value as a String (convenience method for [value]). */
@@ -69,6 +71,7 @@ abstract class JsonValue<T> {
     operator fun invoke(v:Any?):Json = when(v) {
       is Json -> v
       is Int -> JsonInt(v)
+      is Long -> JsonLong(v)
       is Float -> JsonFloat(v)
       is String -> JsonString(v)
       is Boolean -> JsonBoolean(v)

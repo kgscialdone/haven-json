@@ -1,5 +1,6 @@
 {
   "int": 100,
+  "long": 1545342012422,
   "float": 100.0,
   "string": "string \\\"with quotes\"",
   "escapes": "\u2602\n\b\r\t\f\\\"",
