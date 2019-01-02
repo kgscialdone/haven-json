@@ -176,7 +176,7 @@ class WithDate(date:ZonedDateTime) : JsonSchema
 // Register a deserializer function with the default group
 // The input and output types of the given function are used to determine what to use
 // Only one deserializer function is allowed per output type
-Deserializers.register(ZonedDateTime::parse) // (String) -> ZonedDateTime
+Deserializers.add(ZonedDateTime::parse) // (String) -> ZonedDateTime
 val withDate = Json.deserialize(::WithDate, """{"date":"2018-07-05T18:13:59+00:00"}""")
 
 // Custom deserializer group
